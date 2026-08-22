@@ -4,9 +4,9 @@ This repository is the foundation for a phone-operated, zero-budget factory that
 
 ## Current state
 
-> **Phase 2 — Automated heartbeat for the first template: complete.**
+> **Phase 3 — Expanded idea layer and deterministic templates: complete.**
 
-The repository is public, the Phase 0 foundation is complete, the first manually built Tier A product is live at `/products/idea-mashup/`, and the Phase 2 weekly heartbeat is active. The weekly workflow deterministically creates a new product path, validates it, pushes it to `main`, waits for GitHub Pages, and notifies Telegram. No deployment to Manus was used or configured.
+The repository is public, the first manually built Tier A product is live, the weekly heartbeat is active, and Phase 3 now provides a versioned idea backlog plus four deterministic Tier A templates. The weekly workflow selects a not-yet-built idea, renders the matching template, validates it, pushes it to `main`, waits for GitHub Pages, and notifies Telegram. No deployment to Manus was used or configured.
 
 ## Phase gates
 
@@ -17,7 +17,7 @@ Each phase is a gate. The next phase must not begin until the current phase has 
 | 0 | Public repository, Pages readiness, and manual Telegram test plumbing | Complete |
 | 1 | One manually built Tier A product, end to end | Complete |
 | 2 | Weekly automation for the first template | Complete |
-| 3 | Backlog expansion and additional deterministic templates | Not started |
+| 3 | Backlog expansion and additional deterministic templates | Complete |
 | 4 | LLM generation behind an automated verification gate | Not started |
 | 5 | LLM provider fallback chain | Not started |
 | 6 | Catalog and lightweight analytics | Not started |
@@ -59,3 +59,11 @@ The project must remain zero-budget, phone-operable, and based on a public GitHu
 The active workflow [Phase 2 — weekly factory heartbeat](.github/workflows/phase-2-weekly-factory.yml) runs every Monday at 09:00 UTC and can also be started manually with an optional `YYYY-wNN` period. It uses the local deterministic builder and validator, so it requires no LLM and no paid provider. Each period is placed under `products/weekly/YYYY-wNN/`, and an existing different artifact is never overwritten.
 
 The successful verification run [32602071976](https://github.com/lo77667/repositoryDz/actions/runs/32602071976) created [the 2026-w35 product](https://lo77667.github.io/repositoryDz/products/weekly/2026-w35/), verified its public HTTP 200 response, and sent a Telegram success notification. The full audit is in [docs/PHASE-2-TEST-RECORD.md](docs/PHASE-2-TEST-RECORD.md). The runner displayed a non-blocking Node.js 20 deprecation annotation for pinned third-party actions; this is recorded for future dependency maintenance.
+
+## Phase 3 expansion
+
+The versioned backlog is stored in [`ideas/backlog.json`](ideas/backlog.json). It contains the required idea metadata, strategy tags, statuses, difficulty, and category fields. The picker in [`automation/pick_idea.py`](automation/pick_idea.py) selects only `backlog` ideas, uses a stable period-based hash, and marks the selected record as `built` with its period.
+
+The deterministic template library now includes the original idea mashup plus [`templates/converter.html`](templates/converter.html), [`templates/visual-toy.html`](templates/visual-toy.html), and [`templates/text-tool.html`](templates/text-tool.html). The validator adapts its required interaction checks to the selected strategy and uses only standard Python libraries on the GitHub runner.
+
+The end-to-end verification selected **بطاقات القرار** with `template:visual-toy` for `2026-w36`. The resulting product is available at [https://lo77667.github.io/repositoryDz/products/weekly/2026-w36/](https://lo77667.github.io/repositoryDz/products/weekly/2026-w36/) and the successful run is [32602565367](https://github.com/lo77667/repositoryDz/actions/runs/32602565367). Full details are in [`docs/PHASE-3-TEST-RECORD.md`](docs/PHASE-3-TEST-RECORD.md). Phase 4, LLM generation, remains not started.

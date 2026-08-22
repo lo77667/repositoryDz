@@ -81,8 +81,14 @@ def main() -> None:
 
     strategy_match = re.search(r'"strategy":"(template:[^"]+)"', html)
     strategy = strategy_match.group(1) if strategy_match else ""
-    if not strategy:
+    legacy_artifact = not strategy and relative.as_posix() in {
+        "products/weekly/2026-w34/index.html",
+        "products/weekly/2026-w35/index.html",
+    }
+    if not strategy and not legacy_artifact:
         errors.append("Weekly strategy payload is missing")
+    if legacy_artifact:
+        strategy = "template:idea-mashup"
     for required_id in strategy_requirements(strategy):
         if required_id not in parser.ids:
             errors.append(f"Missing required id for {strategy or 'unknown strategy'}: {required_id}")
