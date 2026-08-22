@@ -1,0 +1,115 @@
+name: Phase 2 — weekly factory heartbeat
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-factory-main
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and publish the weekly Tier A product
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      period: ${{ steps.build.outputs.period }}
+      path: ${{ steps.build.outputs.path }}
+      url: ${{ steps.build.outputs.url }}
+      title: ${{ steps.build.outputs.title }}
+    steps:
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build the deterministic weekly artifact
+        id: build
+        shell: bash
+        run: python3 automation/build_weekly_product.py
+
+      - name: Validate the generated artifact
+        shell: bash
+        run: python3 automation/validate_weekly_product.py "${{ steps.build.outputs.path }}"
+
+      - name: Commit and push the new weekly artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "repositoryDz weekly factory"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ steps.build.outputs.path }}"
+          if git diff --cached --quiet; then
+            echo "The weekly artifact already exists with the same content; nothing to push."
+          else
+            git commit -m "chore: publish weekly product ${{ steps.build.outputs.period }}"
+            git push origin HEAD:main
+          fi
+
+      - name: Wait for the published Pages path
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='${{ steps.build.outputs.url }}'
+          for attempt in $(seq 1 18); do
+            if curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "$url"; then
+              echo "Published URL is reachable: $url"
+              exit 0
+            fi
+            echo "Pages is still building (attempt $attempt/18)."
+            sleep 10
+          done
+          echo "::error::The weekly Pages URL did not become reachable in time: $url"
+          exit 1
+
+      - name: Send successful weekly notification
+        if: ${{ success() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PRODUCT_PERIOD: ${{ steps.build.outputs.period }}
+          PRODUCT_TITLE: ${{ steps.build.outputs.title }}
+          PRODUCT_URL: ${{ steps.build.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "::error::Telegram secrets are required for the weekly success notification."
+            exit 1
+          fi
+          message="نجح تشغيل المصنع الأسبوعي — ${PRODUCT_PERIOD}\n${PRODUCT_TITLE}\n${PRODUCT_URL}"
+          response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+          grep -q '"ok":true' <<<"${response}"
+
+      - name: Send failure notification
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "Telegram secrets are unavailable; failure cannot be notified remotely."
+            exit 1
+          fi
+          message="فشل تشغيل المصنع الأسبوعي — راجع السجل:\n${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+          grep -q '"ok":true' <<<"${response}"
