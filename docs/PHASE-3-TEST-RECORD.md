@@ -23,3 +23,7 @@ GitHub Pages reported `built` with no error. The existing `2026-w34` and `2026-w
 ## Scope review
 
 Phase 3 adds the idea backlog, deterministic picker, and three new Tier A templates. It does not introduce LLM generation, provider fallback, analytics, public intake, or Manus publication. The non-blocking Node.js 20 deprecation annotation remains recorded from the GitHub runner and is deferred to maintenance hardening.
+## Live browser interaction
+
+The published `2026-w36` visual-toy artifact loaded with the Arabic RTL interface. The initial scene displayed **هدوء بشدة 55%**. Clicking **طاقة** updated the visual gradient and the live readout to **طاقة بشدة 55%**, confirming the interactive mood control works on the public URL.
+The direct text-input attempt was not suitable for the range control and left it at 55%; this was a test-method limitation, not an application defect. Dispatching the native `input` event on the public page updated the value to 85 and the readout to **المشهد الحالي: طاقة بشدة 85%**, confirming the slider logic works.
