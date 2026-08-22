@@ -4,9 +4,9 @@ This repository is the foundation for a phone-operated, zero-budget factory that
 
 ## Current state
 
-> **Phase 1 — One idea, fully manual, end to end: complete.**
+> **Phase 2 — Automated heartbeat for the first template: complete.**
 
-The repository is public, the Phase 0 foundation is complete, and the first manually built Tier A product is live at `/products/idea-mashup/`. The product is a self-contained Arabic idea-mashup generator that runs entirely in the browser. No deployment to Manus was used or configured.
+The repository is public, the Phase 0 foundation is complete, the first manually built Tier A product is live at `/products/idea-mashup/`, and the Phase 2 weekly heartbeat is active. The weekly workflow deterministically creates a new product path, validates it, pushes it to `main`, waits for GitHub Pages, and notifies Telegram. No deployment to Manus was used or configured.
 
 ## Phase gates
 
@@ -16,7 +16,7 @@ Each phase is a gate. The next phase must not begin until the current phase has 
 |---|---|---|
 | 0 | Public repository, Pages readiness, and manual Telegram test plumbing | Complete |
 | 1 | One manually built Tier A product, end to end | Complete |
-| 2 | Weekly automation for the first template | Not started |
+| 2 | Weekly automation for the first template | Complete |
 | 3 | Backlog expansion and additional deterministic templates | Not started |
 | 4 | LLM generation behind an automated verification gate | Not started |
 | 5 | LLM provider fallback chain | Not started |
@@ -53,3 +53,9 @@ The project must remain zero-budget, phone-operable, and based on a public GitHu
 | Browser interaction | Passed | Generate, copy, reset, and refresh persistence tested on the live URL |
 | Launch notification | Passed | [Telegram workflow run 32600921582](https://github.com/lo77667/repositoryDz/actions/runs/32600921582) |
 | Manus publication | Intentionally not used | Outside the approved scope |
+
+## Phase 2 automation
+
+The active workflow [Phase 2 — weekly factory heartbeat](.github/workflows/phase-2-weekly-factory.yml) runs every Monday at 09:00 UTC and can also be started manually with an optional `YYYY-wNN` period. It uses the local deterministic builder and validator, so it requires no LLM and no paid provider. Each period is placed under `products/weekly/YYYY-wNN/`, and an existing different artifact is never overwritten.
+
+The successful verification run [32602071976](https://github.com/lo77667/repositoryDz/actions/runs/32602071976) created [the 2026-w35 product](https://lo77667.github.io/repositoryDz/products/weekly/2026-w35/), verified its public HTTP 200 response, and sent a Telegram success notification. The full audit is in [docs/PHASE-2-TEST-RECORD.md](docs/PHASE-2-TEST-RECORD.md). The runner displayed a non-blocking Node.js 20 deprecation annotation for pinned third-party actions; this is recorded for future dependency maintenance.
