@@ -151,9 +151,10 @@
       "title": "ناقد صفحة الدفع",
       "pitch": "أداة صغيرة تساعد صاحب المتجر على مراجعة وضوح صفحة الدفع قبل إطلاقها.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w38"
     },
     {
       "id": "generate-002",
