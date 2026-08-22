@@ -1,0 +1,178 @@
+name: Phase 4 — LLM generation behind verification gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      period:
+        description: 'فترة اختبار بصيغة YYYY-wNN؛ اتركها فارغة لاستخدام الأسبوع الحالي'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: llm-gated-factory-main
+  cancel-in-progress: false
+
+env:
+  PYTHONUNBUFFERED: '1'
+  LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai' }}
+  LLM_MODEL: ${{ vars.LLM_MODEL || 'gemini-3-flash-preview' }}
+
+jobs:
+  generate:
+    name: Generate, verify, repair, and publish safely
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      period: ${{ steps.build.outputs.period }}
+      path: ${{ steps.build.outputs.path }}
+      url: ${{ steps.build.outputs.url }}
+      title: ${{ steps.build.outputs.title }}
+      idea_id: ${{ steps.build.outputs.idea_id }}
+      mode: ${{ steps.build.outputs.mode }}
+    steps:
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install the isolated browser verifier
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --no-input --quiet playwright
+          python3 -m playwright install --with-deps chromium
+
+      - name: Pick one generate idea
+        id: pick
+        env:
+          WEEKLY_PERIOD: ${{ inputs.period }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${WEEKLY_PERIOD:-}" ]]; then
+            python3 automation/pick_idea.py --period "${WEEKLY_PERIOD}" --strategy generate
+          else
+            python3 automation/pick_idea.py --strategy generate
+          fi
+
+      - name: Generate and verify the LLM candidate with bounded repairs
+        id: build
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          WEEKLY_PERIOD: ${{ steps.pick.outputs.period }}
+          SELECTED_IDEA: ${{ steps.pick.outputs.idea_json }}
+          CANDIDATE_PATH: products/weekly/${{ steps.pick.outputs.period }}/index.html
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "${CANDIDATE_PATH}")"
+          set +e
+          python3 automation/generate_and_verify.py \
+            --idea-json "${SELECTED_IDEA}" \
+            --period "${WEEKLY_PERIOD}" \
+            --output "${CANDIDATE_PATH}" \
+            --max-repairs 2 > /tmp/generation-result.json
+          generation_status=$?
+          set -e
+
+          if [[ "${generation_status}" -eq 0 ]]; then
+            mode='generated'
+            echo 'The LLM candidate passed the verification gate.'
+          else
+            echo 'The LLM candidate was rejected or unavailable; building the safe placeholder fallback.'
+            python3 automation/build_fallback_product.py \
+              --idea-json "${SELECTED_IDEA}" \
+              --period "${WEEKLY_PERIOD}" \
+              --output "${CANDIDATE_PATH}"
+            mode='fallback'
+          fi
+
+          python3 automation/validate_generated_html.py "${CANDIDATE_PATH}"
+          python3 automation/verify_generated_browser.py "${CANDIDATE_PATH}"
+          url="https://lo77667.github.io/repositoryDz/products/weekly/${WEEKLY_PERIOD}/"
+          {
+            echo "period=${WEEKLY_PERIOD}"
+            echo "path=${CANDIDATE_PATH}"
+            echo "url=${url}"
+            echo "title=${{ steps.pick.outputs.idea_title }}"
+            echo "idea_id=${{ steps.pick.outputs.idea_id }}"
+            echo "mode=${mode}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Commit and push the accepted artifact and backlog state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "repositoryDz LLM factory"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ideas/backlog.json "${{ steps.build.outputs.path }}"
+          git commit -m "chore: publish generated idea ${{ steps.build.outputs.idea_id }} for ${{ steps.build.outputs.period }}"
+          git push origin HEAD:main
+
+      - name: Wait for the published Pages path
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='${{ steps.build.outputs.url }}'
+          for attempt in $(seq 1 24); do
+            if curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "$url"; then
+              echo "Published URL is reachable: $url"
+              exit 0
+            fi
+            echo "Pages is still building (attempt $attempt/24)."
+            sleep 10
+          done
+          echo "::error::The LLM product URL did not become reachable in time: $url"
+          exit 1
+
+      - name: Send successful LLM notification
+        if: ${{ success() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PRODUCT_PERIOD: ${{ steps.build.outputs.period }}
+          PRODUCT_TITLE: ${{ steps.pick.outputs.idea_title }}
+          PRODUCT_URL: ${{ steps.build.outputs.url }}
+          PRODUCT_MODE: ${{ steps.build.outputs.mode }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "::error::Telegram secrets are required for the Phase 4 success notification."
+            exit 1
+          fi
+          message="نجحت المرحلة 4 — ${PRODUCT_PERIOD}\nالفكرة: ${PRODUCT_TITLE}\nالنمط: ${PRODUCT_MODE}\n${PRODUCT_URL}"
+          response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+          grep -q '"ok":true' <<<"${response}"
+
+      - name: Send failure notification
+        if: ${{ failure() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "Telegram secrets are unavailable; failure cannot be notified remotely."
+            exit 1
+          fi
+          message="فشلت المرحلة 4؛ لم يتم نشر ناتج غير متحقق منه. راجع السجل:\n${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+          grep -q '"ok":true' <<<"${response}"

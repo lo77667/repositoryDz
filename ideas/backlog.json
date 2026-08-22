@@ -144,6 +144,26 @@
       "difficulty": 1,
       "category": "factory",
       "built_period": "2026-w34"
+    },
+    {
+      "id": "generate-001",
+      "slug": "checkout-copy-critic",
+      "title": "ناقد صفحة الدفع",
+      "pitch": "أداة صغيرة تساعد صاحب المتجر على مراجعة وضوح صفحة الدفع قبل إطلاقها.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "ecommerce"
+    },
+    {
+      "id": "generate-002",
+      "slug": "offer-brief-maker",
+      "title": "صانع موجز العرض",
+      "pitch": "مساحة مركزة لتحويل فكرة عرض مبهمة إلى موجز قابل للمشاركة.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "ecommerce"
     }
   ]
 }

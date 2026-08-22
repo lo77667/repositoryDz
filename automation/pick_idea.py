@@ -48,6 +48,8 @@ def write_backlog(data: dict) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--period", help="Explicit period such as 2026-w36")
+    parser.add_argument("--strategy", help="Select only an exact strategy, such as generate")
+    parser.add_argument("--strategy-prefix", help="Select only strategies beginning with this prefix")
     parser.add_argument("--dry-run", action="store_true", help="Select without marking the idea built")
     args = parser.parse_args()
     period = args.period or current_period(date.today())
@@ -55,7 +57,12 @@ def main() -> None:
         raise SystemExit("Period must match YYYY-wNN")
 
     data = load_backlog()
-    available = [idea for idea in data["ideas"] if idea.get("status") == "backlog"]
+    available = [
+        idea for idea in data["ideas"]
+        if idea.get("status") == "backlog"
+        and (not args.strategy or idea.get("strategy") == args.strategy)
+        and (not args.strategy_prefix or str(idea.get("strategy", "")).startswith(args.strategy_prefix))
+    ]
     if not available:
         raise SystemExit("No backlog ideas are available; refusing to repeat a built idea")
     selected = available[stable_index(period, len(available))].copy()
@@ -77,6 +84,7 @@ def main() -> None:
             handle.write(f"idea_json={json.dumps(selected, ensure_ascii=False, separators=(',', ':'))}\n")
             handle.write(f"idea_id={selected['id']}\n")
             handle.write(f"idea_slug={selected['slug']}\n")
+            handle.write(f"idea_title={selected['title']}\n")
             handle.write(f"strategy={selected['strategy']}\n")
 
 

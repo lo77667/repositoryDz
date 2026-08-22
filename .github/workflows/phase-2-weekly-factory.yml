@@ -53,9 +53,9 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -n "${WEEKLY_PERIOD:-}" ]]; then
-            python3 automation/pick_idea.py --period "${WEEKLY_PERIOD}"
+            python3 automation/pick_idea.py --period "${WEEKLY_PERIOD}" --strategy-prefix template:
           else
-            python3 automation/pick_idea.py
+            python3 automation/pick_idea.py --strategy-prefix template:
           fi
 
       - name: Build the selected deterministic artifact
