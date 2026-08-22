@@ -58,7 +58,7 @@ def main() -> None:
     available = [idea for idea in data["ideas"] if idea.get("status") == "backlog"]
     if not available:
         raise SystemExit("No backlog ideas are available; refusing to repeat a built idea")
-    selected = available[stable_index(period, len(available))]
+    selected = available[stable_index(period, len(available))].copy()
     if not args.dry_run:
         for idea in data["ideas"]:
             if idea.get("id") == selected.get("id"):
