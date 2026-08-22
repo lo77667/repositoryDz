@@ -1,0 +1,65 @@
+name: Phase 1 — product notification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Notify product launch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate required secrets
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" ]]; then
+            echo "::error::The TELEGRAM_BOT_TOKEN Actions secret is missing."
+            exit 1
+          fi
+
+          if [[ -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "::error::The TELEGRAM_CHAT_ID Actions secret is missing."
+            exit 1
+          fi
+
+      - name: Verify the published product is reachable
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --header 'Cache-Control: no-cache' \
+            --output /dev/null \
+            'https://lo77667.github.io/repositoryDz/products/idea-mashup/'
+
+      - name: Send product launch message
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          message="تم نشر أداة شرارة منتج بنجاح — المرحلة 1\nhttps://lo77667.github.io/repositoryDz/products/idea-mashup/"
+          response="$(curl --fail-with-body --silent --show-error \
+            --retry 3 \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --request POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+
+          if ! grep -q '"ok":true' <<<"${response}"; then
+            echo "::error::Telegram API did not confirm a successful product notification."
+            exit 1
+          fi
+
+          echo "Telegram accepted the product launch message."
