@@ -166,6 +166,16 @@
       "difficulty": 3,
       "category": "ecommerce",
       "built_period": "2026-w37"
+    },
+    {
+      "id": "generate-003",
+      "slug": "returns-explainer",
+      "title": "مفسر سياسة الاسترجاع",
+      "pitch": "أداة صغيرة تحول سياسة الاسترجاع الطويلة إلى شرح واضح قبل الشراء.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "ecommerce"
     }
   ]
 }
