@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '0 9 * * 1'
   workflow_dispatch:
+    inputs:
+      period:
+        description: 'فترة اختبار اختيارية بصيغة YYYY-wNN؛ اتركها فارغة لاستخدام الأسبوع الحالي'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: write
@@ -36,8 +42,16 @@ jobs:
 
       - name: Build the deterministic weekly artifact
         id: build
+        env:
+          WEEKLY_PERIOD: ${{ inputs.period }}
         shell: bash
-        run: python3 automation/build_weekly_product.py
+        run: |
+          set -euo pipefail
+          if [[ -n "${WEEKLY_PERIOD:-}" ]]; then
+            python3 automation/build_weekly_product.py --period "${WEEKLY_PERIOD}"
+          else
+            python3 automation/build_weekly_product.py
+          fi
 
       - name: Validate the generated artifact
         shell: bash
