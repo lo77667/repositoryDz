@@ -88,9 +88,10 @@
       "title": "بطاقات القرار",
       "pitch": "بطاقات بصرية عشوائية تكسر تردد اختيار الخطوة التالية.",
       "strategy": "template:visual-toy",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 2,
-      "category": "productivity"
+      "category": "productivity",
+      "built_period": "2026-w36"
     },
     {
       "id": "text-001",
