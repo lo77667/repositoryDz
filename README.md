@@ -4,9 +4,9 @@ This repository is the foundation for a phone-operated, zero-budget factory that
 
 ## Current state
 
-> **Phase 3 — Expanded idea layer and deterministic templates: complete.**
+> **Phase 4 — LLM generation behind verification gate: complete for the manual rollout.**
 
-The repository is public, the first manually built Tier A product is live, the weekly heartbeat is active, and Phase 3 now provides a versioned idea backlog plus four deterministic Tier A templates. The weekly workflow selects a not-yet-built idea, renders the matching template, validates it, pushes it to `main`, waits for GitHub Pages, and notifies Telegram. No deployment to Manus was used or configured.
+The repository is public, the first manually built Tier A product is live, the weekly heartbeat is active, and Phase 4 now adds a manual LLM generation path behind static and isolated-browser verification. The generated path is accepted only after the safety gate passes; unavailable or rejected generations use a deterministic safe fallback. No deployment to Manus was used or configured.
 
 ## Phase gates
 
@@ -18,7 +18,7 @@ Each phase is a gate. The next phase must not begin until the current phase has 
 | 1 | One manually built Tier A product, end to end | Complete |
 | 2 | Weekly automation for the first template | Complete |
 | 3 | Backlog expansion and additional deterministic templates | Complete |
-| 4 | LLM generation behind an automated verification gate | Not started |
+| 4 | LLM generation behind an automated verification gate | Complete — manual rollout |
 | 5 | LLM provider fallback chain | Not started |
 | 6 | Catalog and lightweight analytics | Not started |
 | 7 | Public idea intake and feedback-informed prioritization | Not started |
@@ -66,4 +66,14 @@ The versioned backlog is stored in [`ideas/backlog.json`](ideas/backlog.json). I
 
 The deterministic template library now includes the original idea mashup plus [`templates/converter.html`](templates/converter.html), [`templates/visual-toy.html`](templates/visual-toy.html), and [`templates/text-tool.html`](templates/text-tool.html). The validator adapts its required interaction checks to the selected strategy and uses only standard Python libraries on the GitHub runner.
 
-The end-to-end verification selected **بطاقات القرار** with `template:visual-toy` for `2026-w36`. The resulting product is available at [https://lo77667.github.io/repositoryDz/products/weekly/2026-w36/](https://lo77667.github.io/repositoryDz/products/weekly/2026-w36/) and the successful run is [32602565367](https://github.com/lo77667/repositoryDz/actions/runs/32602565367). Full details are in [`docs/PHASE-3-TEST-RECORD.md`](docs/PHASE-3-TEST-RECORD.md). Phase 4, LLM generation, remains not started.
+The end-to-end verification selected **بطاقات القرار** with `template:visual-toy` for `2026-w36`. The resulting product is available at [https://lo77667.github.io/repositoryDz/products/weekly/2026-w36/](https://lo77667.github.io/repositoryDz/products/weekly/2026-w36/) and the successful run is [32602565367](https://github.com/lo77667/repositoryDz/actions/runs/32602565367). Full details are in [`docs/PHASE-3-TEST-RECORD.md`](docs/PHASE-3-TEST-RECORD.md).
+
+## Phase 4 LLM generation
+
+The manual-only workflow [`Phase 4 — LLM generation behind verification gate`](.github/workflows/phase-4-llm-gated-factory.yml) selects an idea whose strategy is `generate`, requests one structured HTML candidate from an OpenAI-compatible provider, and never publishes the candidate directly. It applies a static safety gate, an isolated Chromium browser gate, and at most two repair attempts. A rejected or unavailable candidate is replaced by a deterministic safe placeholder and reported as `fallback`.
+
+The provider configuration is externalized to `LLM_API_KEY` as a repository secret, with optional `LLM_BASE_URL` and `LLM_MODEL` variables. The documented default is Google Gemini's OpenAI-compatible endpoint with `gemini-3-flash-preview`. Provider research and official references are in [`docs/PHASE-4-PROVIDER-RESEARCH.md`](docs/PHASE-4-PROVIDER-RESEARCH.md), while the design contract is in [`docs/PHASE-4-DESIGN.md`](docs/PHASE-4-DESIGN.md).
+
+The successful real rollout was [run 32605209546](https://github.com/lo77667/repositoryDz/actions/runs/32605209546). It selected **ناقد صفحة الدفع**, accepted the result in `generated` mode, passed static and isolated-browser verification, published [the 2026-w38 product](https://lo77667.github.io/repositoryDz/products/weekly/2026-w38/), returned HTTP 200, and sent a Telegram notification. The live primary action rendered a `0%` result and recommendations. The full record is in [`docs/PHASE-4-TEST-RECORD.md`](docs/PHASE-4-TEST-RECORD.md).
+
+The first real rollout was intentionally retained as evidence of the safe fallback path: it published `2026-w37` in `fallback` mode after the candidate was not accepted or available. It still passed every safety and browser gate. Phase 5, the provider fallback chain, remains not started; the Phase 4 fallback here is a deterministic safety fallback, not a multi-provider chain. LLM scheduling also remains manual-only until a later approved phase.
