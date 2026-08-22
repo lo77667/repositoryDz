@@ -1,16 +1,48 @@
 #!/usr/bin/env python3
-"""Validate one generated weekly product artifact."""
+"""Validate one generated weekly product artifact using only the Python standard library."""
 
 from __future__ import annotations
 
 import re
 import subprocess
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 
-from bs4 import BeautifulSoup
-
 ROOT = Path(__file__).resolve().parents[1]
+
+
+class ArtifactParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.ids: set[str] = set()
+        self.script_contents: list[str] = []
+        self._in_script = False
+        self._script_buffer: list[str] = []
+        self.html_attrs: dict[str, str] = {}
+        self.external_dependency = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attr_map = {key: value or "" for key, value in attrs}
+        if tag == "html":
+            self.html_attrs = attr_map
+        if "id" in attr_map:
+            self.ids.add(attr_map["id"])
+        if (tag == "script" and "src" in attr_map) or (tag == "link" and "href" in attr_map):
+            self.external_dependency = True
+        if tag == "script":
+            self._in_script = True
+            self._script_buffer = []
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "script" and self._in_script:
+            self.script_contents.append("".join(self._script_buffer))
+            self._in_script = False
+            self._script_buffer = []
+
+    def handle_data(self, data: str) -> None:
+        if self._in_script:
+            self._script_buffer.append(data)
 
 
 def main() -> None:
@@ -29,13 +61,19 @@ def main() -> None:
         errors.append("Artifact path is not a weekly YYYY-wNN product path")
 
     html = path.read_text(encoding="utf-8")
-    soup = BeautifulSoup(html, "html.parser")
-    for selector in ("#generate-btn", "#copy-btn", "#reset-btn", "#idea-title", "#idea-body", "#idea-tags", "#status"):
-        if soup.select_one(selector) is None:
-            errors.append(f"Missing required selector: {selector}")
-    if soup.html is None or soup.html.get("lang") != "ar" or soup.html.get("dir") != "rtl":
+    parser = ArtifactParser()
+    try:
+        parser.feed(html)
+        parser.close()
+    except Exception as exc:
+        errors.append(f"HTML parsing failed: {exc}")
+
+    for required_id in ("generate-btn", "copy-btn", "reset-btn", "idea-title", "idea-body", "idea-tags", "status"):
+        if required_id not in parser.ids:
+            errors.append(f"Missing required id: {required_id}")
+    if parser.html_attrs.get("lang") != "ar" or parser.html_attrs.get("dir") != "rtl":
         errors.append("HTML language or direction is incorrect")
-    if re.search(r"<(?:script|link)[^>]+(?:src|href)=", html, re.I):
+    if parser.external_dependency:
         errors.append("External script or stylesheet dependency found")
     if re.search(r"https?://", html, re.I):
         errors.append("External URL found in weekly artifact")
@@ -43,9 +81,8 @@ def main() -> None:
         errors.append("Network-capable browser API found")
     if "window.__WEEKLY_IDEA__" not in html:
         errors.append("Weekly idea payload is missing")
-    scripts = [script.string or "" for script in soup.find_all("script")]
     js_path = ROOT / ".phase2_weekly_inline.js"
-    js_path.write_text("\n".join(scripts), encoding="utf-8")
+    js_path.write_text("\n".join(parser.script_contents), encoding="utf-8")
     check = subprocess.run(["node", "--check", str(js_path)], capture_output=True, text=True)
     if check.returncode != 0:
         errors.append("Generated JavaScript syntax check failed: " + check.stderr.strip())
