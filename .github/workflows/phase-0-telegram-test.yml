@@ -1,0 +1,56 @@
+name: Phase 0 — Telegram plumbing test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  telegram-test:
+    name: Send Phase 0 test message
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate required secrets
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" ]]; then
+            echo "::error::The TELEGRAM_BOT_TOKEN Actions secret is missing."
+            exit 1
+          fi
+
+          if [[ -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "::error::The TELEGRAM_CHAT_ID Actions secret is missing."
+            exit 1
+          fi
+
+      - name: Send Telegram test message
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          message="repositoryDz Phase 0 test succeeded. GitHub Actions can reach Telegram."
+          response="$(curl --fail-with-body --silent --show-error \
+            --retry 3 \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --request POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+
+          if ! grep -q '"ok":true' <<<"${response}"; then
+            echo "::error::Telegram API did not confirm a successful message delivery."
+            exit 1
+          fi
+
+          echo "Telegram accepted the Phase 0 test message."
