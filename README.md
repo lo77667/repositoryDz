@@ -4,11 +4,11 @@ This repository is the foundation for a phone-operated, zero-budget factory that
 
 ## Current state
 
-> **Phase 0 — Foundation: partially complete; Pages setup pending.**
+> **Phase 0 — Foundation: complete.**
 
 The repository is public, the Phase 0 workflow is present on `main`, and the workflow was manually dispatched for verification. No product site was created in this phase, and no deployment to Manus was used or configured.
 
-The Telegram test requires two GitHub Actions secrets, `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`. Secrets are never stored in this repository. The first verification run failed safely because the secrets were not configured; after they were added, the manual verification succeeded. GitHub Pages is still not enabled because the current GitHub authorization cannot configure Pages through the API. This is the only remaining bootstrap blocker; Phase 0 must remain open until Pages is configured.
+The Telegram test requires two GitHub Actions secrets, `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`. Secrets are never stored in this repository. After the secrets were added, the manual verification succeeded. GitHub Pages is configured from the `main` branch and the root folder. No product site was created in this phase, and no deployment to Manus was used or configured.
 
 ## Phase gates
 
@@ -16,7 +16,7 @@ Each phase is a gate. The next phase must not begin until the current phase has 
 
 | Phase | Scope | State |
 |---|---|---|
-| 0 | Public repository, Pages readiness, and manual Telegram test plumbing | Partially complete; Pages pending |
+| 0 | Public repository, Pages readiness, and manual Telegram test plumbing | Complete |
 | 1 | One manually built Tier A product, end to end | Not started |
 | 2 | Weekly automation for the first template | Not started |
 | 3 | Backlog expansion and additional deterministic templates | Not started |
@@ -38,5 +38,5 @@ The project must remain zero-budget, phone-operable, and based on a public GitHu
 | Main branch content | Passed | Commit `79e7743a410162e6bd5d0967fdb414e1f7ff3f36` |
 | Workflow discovery | Passed | `Phase 0 — Telegram plumbing test` is active |
 | Manual workflow execution | Passed | Run [32600240785](https://github.com/lo77667/repositoryDz/actions/runs/32600240785) completed successfully after both secrets were added |
-| GitHub Pages configuration | Blocked | Pages API returned HTTP 403 for the current authorization |
+| GitHub Pages configuration | Passed | Status `built`; source is `main` and `/`; URL: https://lo77667.github.io/repositoryDz/ |
 | Manus publication | Intentionally not used | Outside the approved scope |
