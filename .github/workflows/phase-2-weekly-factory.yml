@@ -18,6 +18,9 @@ concurrency:
   group: weekly-factory-main
   cancel-in-progress: false
 
+env:
+  PYTHONUNBUFFERED: '1'
+
 jobs:
   build:
     name: Build and publish the weekly Tier A product
@@ -28,6 +31,8 @@ jobs:
       path: ${{ steps.build.outputs.path }}
       url: ${{ steps.build.outputs.url }}
       title: ${{ steps.build.outputs.title }}
+      idea_id: ${{ steps.build.outputs.idea_id }}
+      strategy: ${{ steps.build.outputs.strategy }}
     steps:
       - name: Check out the main branch
         uses: actions/checkout@v4
@@ -40,34 +45,46 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Build the deterministic weekly artifact
-        id: build
+      - name: Pick one backlog idea
+        id: pick
         env:
           WEEKLY_PERIOD: ${{ inputs.period }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ -n "${WEEKLY_PERIOD:-}" ]]; then
-            python3 automation/build_weekly_product.py --period "${WEEKLY_PERIOD}"
+            python3 automation/pick_idea.py --period "${WEEKLY_PERIOD}"
           else
-            python3 automation/build_weekly_product.py
+            python3 automation/pick_idea.py
           fi
+
+      - name: Build the selected deterministic artifact
+        id: build
+        env:
+          WEEKLY_PERIOD: ${{ steps.pick.outputs.period }}
+          SELECTED_IDEA: ${{ steps.pick.outputs.idea_json }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 automation/build_weekly_product.py \
+            --period "${WEEKLY_PERIOD}" \
+            --idea-json "${SELECTED_IDEA}"
 
       - name: Validate the generated artifact
         shell: bash
         run: python3 automation/validate_weekly_product.py "${{ steps.build.outputs.path }}"
 
-      - name: Commit and push the new weekly artifact
+      - name: Commit and push the new weekly artifact and backlog state
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "repositoryDz weekly factory"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "${{ steps.build.outputs.path }}"
+          git add ideas/backlog.json "${{ steps.build.outputs.path }}"
           if git diff --cached --quiet; then
-            echo "The weekly artifact already exists with the same content; nothing to push."
+            echo "No backlog or artifact changes detected."
           else
-            git commit -m "chore: publish weekly product ${{ steps.build.outputs.period }}"
+            git commit -m "chore: publish ${{ steps.build.outputs.idea_id }} for ${{ steps.build.outputs.period }}"
             git push origin HEAD:main
           fi
 

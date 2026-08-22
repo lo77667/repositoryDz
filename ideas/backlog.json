@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "updated_at": "2026-08-22",
+  "ideas": [
+    {
+      "id": "idea-mashup-001",
+      "slug": "daily-offer-spark",
+      "title": "شرارة العرض اليومي",
+      "pitch": "مولّد سريع لأفكار عروض يومية تناسب المتاجر الصغيرة.",
+      "strategy": "template:idea-mashup",
+      "status": "backlog",
+      "difficulty": 1,
+      "category": "ecommerce"
+    },
+    {
+      "id": "idea-mashup-002",
+      "slug": "creator-prompt-spark",
+      "title": "شرارة محتوى للصنّاع",
+      "pitch": "تركيبات قصيرة تربط جمهور صانع المحتوى بمشكلة وفكرة نشر.",
+      "strategy": "template:idea-mashup",
+      "status": "backlog",
+      "difficulty": 1,
+      "category": "content"
+    },
+    {
+      "id": "idea-mashup-003",
+      "slug": "service-experiment-spark",
+      "title": "شرارة تجربة خدمة",
+      "pitch": "اقتراح تجربة صغيرة تساعد مقدم الخدمة على اختبار طلب حقيقي.",
+      "strategy": "template:idea-mashup",
+      "status": "backlog",
+      "difficulty": 1,
+      "category": "services"
+    },
+    {
+      "id": "converter-001",
+      "slug": "price-margin-converter",
+      "title": "حاسبة هامش السعر",
+      "pitch": "تحويل سعر التكلفة والهدف الربحي إلى سعر بيع وهوامش واضحة.",
+      "strategy": "template:converter",
+      "status": "backlog",
+      "difficulty": 1,
+      "category": "ecommerce"
+    },
+    {
+      "id": "converter-002",
+      "slug": "discount-recovery-converter",
+      "title": "محول أثر الخصم",
+      "pitch": "حساب المبيعات الإضافية اللازمة لتعويض نسبة خصم محددة.",
+      "strategy": "template:converter",
+      "status": "backlog",
+      "difficulty": 2,
+      "category": "ecommerce"
+    },
+    {
+      "id": "converter-003",
+      "slug": "time-to-minutes-converter",
+      "title": "محول الوقت إلى دقائق",
+      "pitch": "تحويل مدة العمل إلى دقائق قابلة للمقارنة والتخطيط.",
+      "strategy": "template:converter",
+      "status": "backlog",
+      "difficulty": 1,
+      "category": "productivity"
+    },
+    {
+      "id": "visual-001",
+      "slug": "palette-mood-toy",
+      "title": "لعبة مزاج الألوان",
+      "pitch": "لوحة تفاعلية صغيرة تنشئ تدرجًا لونيًا من مزاج مختار.",
+      "strategy": "template:visual-toy",
+      "status": "backlog",
+      "difficulty": 2,
+      "category": "design"
+    },
+    {
+      "id": "visual-002",
+      "slug": "focus-orbit-toy",
+      "title": "مدار التركيز",
+      "pitch": "تجربة بصرية قصيرة تساعد المستخدم على بدء جلسة تركيز.",
+      "strategy": "template:visual-toy",
+      "status": "backlog",
+      "difficulty": 2,
+      "category": "wellbeing"
+    },
+    {
+      "id": "visual-003",
+      "slug": "decision-cards-toy",
+      "title": "بطاقات القرار",
+      "pitch": "بطاقات بصرية عشوائية تكسر تردد اختيار الخطوة التالية.",
+      "strategy": "template:visual-toy",
+      "status": "backlog",
+      "difficulty": 2,
+      "category": "productivity"
+    },
+    {
+      "id": "text-001",
+      "slug": "product-description-polisher",
+      "title": "مصقول وصف المنتج",
+      "pitch": "تنظيف وصف منتج خام وتحويله إلى فقرة أوضح للبيع.",
+      "strategy": "template:text-tool",
+      "status": "backlog",
+      "difficulty": 2,
+      "category": "ecommerce"
+    },
+    {
+      "id": "text-002",
+      "slug": "meeting-to-action",
+      "title": "من الاجتماع إلى إجراء",
+      "pitch": "استخراج خطوات عمل قصيرة من ملاحظات اجتماع طويلة.",
+      "strategy": "template:text-tool",
+      "status": "backlog",
+      "difficulty": 2,
+      "category": "productivity"
+    },
+    {
+      "id": "text-003",
+      "slug": "headline-clarifier",
+      "title": "موضح العنوان",
+      "pitch": "اقتراح صيغ أبسط لعنوان صفحة أو رسالة تسويقية.",
+      "strategy": "template:text-tool",
+      "status": "backlog",
+      "difficulty": 2,
+      "category": "content"
+    },
+    {
+      "id": "phase-1-idea-mashup",
+      "slug": "idea-mashup-foundation",
+      "title": "شرارة منتج — النسخة اليدوية",
+      "pitch": "مولّد أفكار أولي أثبت المسار اليدوي من المنتج إلى Pages وTelegram.",
+      "strategy": "template:idea-mashup",
+      "status": "built",
+      "difficulty": 1,
+      "category": "factory",
+      "built_period": "phase-1"
+    },
+    {
+      "id": "phase-2-weekly-mashup",
+      "slug": "weekly-mashup-foundation",
+      "title": "شرارة منتج — النسخة الأسبوعية",
+      "pitch": "أول نسخة أنتجها النبض الأسبوعي الحتمي.",
+      "strategy": "template:idea-mashup",
+      "status": "built",
+      "difficulty": 1,
+      "category": "factory",
+      "built_period": "2026-w34"
+    }
+  ]
+}

@@ -45,6 +45,17 @@ class ArtifactParser(HTMLParser):
             self._script_buffer.append(data)
 
 
+def strategy_requirements(strategy: str) -> tuple[str, ...]:
+    common = ("idea-title",)
+    specific = {
+        "template:idea-mashup": ("generate-btn", "copy-btn", "reset-btn", "idea-body", "idea-tags", "status"),
+        "template:converter": ("idea-pitch", "converter-form", "cost", "rate", "result-value", "formula"),
+        "template:visual-toy": ("idea-pitch", "visual-stage", "orb", "intensity", "shuffle", "readout"),
+        "template:text-tool": ("idea-pitch", "source", "mode", "transform", "result", "count", "state"),
+    }
+    return common + specific.get(strategy, ())
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit("usage: validate_weekly_product.py products/weekly/YYYY-wNN/index.html")
@@ -68,9 +79,13 @@ def main() -> None:
     except Exception as exc:
         errors.append(f"HTML parsing failed: {exc}")
 
-    for required_id in ("generate-btn", "copy-btn", "reset-btn", "idea-title", "idea-body", "idea-tags", "status"):
+    strategy_match = re.search(r'"strategy":"(template:[^"]+)"', html)
+    strategy = strategy_match.group(1) if strategy_match else ""
+    if not strategy:
+        errors.append("Weekly strategy payload is missing")
+    for required_id in strategy_requirements(strategy):
         if required_id not in parser.ids:
-            errors.append(f"Missing required id: {required_id}")
+            errors.append(f"Missing required id for {strategy or 'unknown strategy'}: {required_id}")
     if parser.html_attrs.get("lang") != "ar" or parser.html_attrs.get("dir") != "rtl":
         errors.append("HTML language or direction is incorrect")
     if parser.external_dependency:
@@ -79,8 +94,6 @@ def main() -> None:
         errors.append("External URL found in weekly artifact")
     if any(token in html for token in ("fetch(", "XMLHttpRequest", "WebSocket")):
         errors.append("Network-capable browser API found")
-    if "window.__WEEKLY_IDEA__" not in html:
-        errors.append("Weekly idea payload is missing")
     js_path = ROOT / ".phase2_weekly_inline.js"
     js_path.write_text("\n".join(parser.script_contents), encoding="utf-8")
     check = subprocess.run(["node", "--check", str(js_path)], capture_output=True, text=True)
@@ -96,7 +109,7 @@ def main() -> None:
             print("ERROR:", error)
         raise SystemExit(1)
 
-    print(f"Weekly artifact validation passed: {relative}")
+    print(f"Weekly artifact validation passed: {relative} ({strategy})")
 
 
 if __name__ == "__main__":

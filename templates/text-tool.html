@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#122038">
+  <title>أداة نصية — منتج أسبوعي</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1424;--panel:#14243b;--line:#2b4665;--text:#f2f7ff;--muted:#a9bed7;--accent:#73b9ff;--accent2:#a8e2ff}*{box-sizing:border-box}body{margin:0;min-width:320px;background:radial-gradient(circle at 76% 0,#1d4b6d 0,transparent 29rem),var(--bg);color:var(--text);font-family:Tahoma,"Segoe UI",Arial,sans-serif;line-height:1.7}.shell{width:min(1040px,calc(100% - 30px));margin:auto}.top{padding:24px 0 45px;display:flex;align-items:center;justify-content:space-between;gap:14px}.brand{display:flex;align-items:center;gap:10px}.mark{display:grid;place-items:center;width:39px;height:39px;border-radius:13px;background:var(--accent);color:#0d1a2c;font-weight:900}.brand b{display:block}.brand small{color:var(--muted)}.badge{border:1px solid #3c6289;border-radius:99px;color:var(--accent2);padding:5px 11px;font-size:.75rem}.hero{max-width:750px;margin-bottom:22px}.eyebrow{color:var(--accent);font-size:.8rem;font-weight:800;margin:0 0 9px}h1{font-size:clamp(2rem,5vw,4rem);line-height:1.16;margin:0;letter-spacing:-.04em}p{color:var(--muted)}.workspace{display:grid;grid-template-columns:1fr .9fr;gap:16px}.card{background:rgba(20,36,59,.92);border:1px solid var(--line);border-radius:23px;padding:23px;box-shadow:0 22px 70px #0006}.field{display:grid;gap:8px;margin-bottom:15px}.field label{color:var(--muted);font-size:.85rem}textarea,select{width:100%;border:1px solid var(--line);border-radius:13px;background:#0b1424;color:var(--text);font:inherit;padding:13px 14px}textarea{min-height:240px;resize:vertical}textarea:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}button{border:0;border-radius:12px;padding:12px 16px;cursor:pointer;font:inherit;font-weight:800;background:var(--accent);color:#0d1a2c}.result{min-height:100%;display:flex;flex-direction:column}.result-box{flex:1;min-height:240px;padding:17px;border:1px solid var(--line);border-radius:15px;background:#0b1424;white-space:pre-wrap;color:#e7f3ff}.meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:.78rem;margin-top:10px}.hint{padding:13px;border-radius:13px;background:#193454;color:#dff4ff;font-size:.8rem}.footer{padding:30px 0;color:var(--muted);font-size:.75rem;border-top:1px solid var(--line);margin-top:50px}@media(max-width:760px){.workspace{grid-template-columns:1fr}.top{padding-bottom:30px}.card{padding:19px}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top"><div class="brand"><span class="mark">Aa</span><span><b id="brand-title">أداة نصية</b><small>معالجة محلية بلا حساب</small></span></div><span class="badge">النص لا يغادر جهازك</span></header>
+    <main><section class="hero"><p class="eyebrow">قالب النص — المرحلة 3</p><h1 id="idea-title">اجعل النص الخام أوضح في خطوة واحدة.</h1><p id="idea-pitch">ألصق النص، اختر النتيجة، ثم احصل على نسخة منظمة قابلة للاستخدام.</p></section>
+      <section class="workspace" aria-label="أداة معالجة النص"><article class="card"><p class="eyebrow">النص الأصلي</p><div class="field"><label for="source">ألصق أو اكتب هنا</label><textarea id="source" placeholder="اكتب فقرة أو مجموعة ملاحظات...">اكتب فكرة واحدة في كل سطر ثم رتبها قبل مشاركتها.</textarea></div><div class="field"><label for="mode">نوع التحويل</label><select id="mode"><option value="clean">تنظيف وترتيب</option><option value="bullets">تحويل إلى نقاط</option><option value="headline">صياغة عنوان</option><option value="steps">تحويل إلى خطوات</option></select></div><button id="transform" type="button">طبّق التحويل</button></article>
+      <article class="card result"><p class="eyebrow">الناتج</p><div class="result-box" id="result" aria-live="polite">سيظهر الناتج هنا بعد تطبيق التحويل.</div><div class="meta"><span id="count">0 كلمة</span><span id="state">جاهز</span></div><p class="hint"><strong>نصيحة:</strong> راجع المعنى بعد الترتيب؛ الأداة تحسن الشكل ولا تعرف نيتك.</p></article></section>
+    </main><footer class="footer">نسخة ثابتة من مصنع المنتجات — <span id="period-label">فترة أسبوعية</span></footer>
+  </div>
+  <script>
+    (() => {
+      "use strict";
+      const idea = window.__WEEKLY_IDEA__ || { title: "أداة نصية", pitch: "معالجة نص بسيطة.", format: "أداة نصية", differentiator: "محليًا" };
+      document.querySelector("#idea-title").textContent = idea.title;
+      document.querySelector("#idea-pitch").textContent = `${idea.pitch} ${idea.differentiator || ""}`.trim();
+      document.querySelector("#brand-title").textContent = idea.format;
+      const source = document.querySelector("#source");
+      const mode = document.querySelector("#mode");
+      const result = document.querySelector("#result");
+      const count = document.querySelector("#count");
+      const state = document.querySelector("#state");
+      const words = (text) => text.trim() ? text.trim().split(/\s+/).length : 0;
+      const transform = () => {
+        const original = source.value.trim();
+        const lines = original.split(/\n+/).map((line) => line.replace(/^[-•*\d.)]+\s*/, "").trim()).filter(Boolean);
+        let output = original.replace(/\s+/g, " ").trim();
+        if (mode.value === "bullets") output = lines.map((line) => `• ${line}`).join("\n");
+        if (mode.value === "steps") output = lines.map((line, index) => `${index + 1}. ${line}`).join("\n");
+        if (mode.value === "headline") output = lines.join(" ").replace(/[.!؟]+$/, "").split(/\s+/).slice(0, 12).join(" ");
+        result.textContent = output || "أدخل نصًا أولًا لتطبيق التحويل.";
+        count.textContent = `${words(output)} كلمة`;
+        state.textContent = output ? "تم التحويل" : "بانتظار النص";
+      };
+      document.querySelector("#transform").addEventListener("click", transform);
+      transform();
+    })();
+  </script>
+</body>
+</html>
