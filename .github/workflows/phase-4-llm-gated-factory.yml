@@ -81,9 +81,16 @@ jobs:
             --idea-json "${SELECTED_IDEA}" \
             --period "${WEEKLY_PERIOD}" \
             --output "${CANDIDATE_PATH}" \
-            --max-repairs 2 > /tmp/generation-result.json
+            --max-repairs 2 > /tmp/generation-result.json 2> /tmp/generation-error.log
           generation_status=$?
           set -e
+          echo 'Safe generation diagnostic:'
+          if [[ -s /tmp/generation-result.json ]]; then
+            sed -E 's/(Bearer )[A-Za-z0-9._-]+/\1[REDACTED]/g' /tmp/generation-result.json
+          fi
+          if [[ -s /tmp/generation-error.log ]]; then
+            sed -E 's/(Bearer )[A-Za-z0-9._-]+/\1[REDACTED]/g; s/(LLM_API_KEY=).*/\1[REDACTED]/g' /tmp/generation-error.log
+          fi
 
           if [[ "${generation_status}" -eq 0 ]]; then
             mode='generated'
