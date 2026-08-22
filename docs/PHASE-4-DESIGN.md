@@ -11,8 +11,8 @@ The GitHub Actions workflow reads the provider configuration from repository sec
 | Name | Type | Purpose |
 |---|---|---|
 | `LLM_API_KEY` | Actions secret | Provider credential; never logged or committed |
-| `LLM_BASE_URL` | Actions variable | OpenAI-compatible base URL; defaults to Google's documented Gemini endpoint in the workflow documentation |
-| `LLM_MODEL` | Actions variable | Provider model identifier; defaults to `gemini-3-flash-preview` in the workflow documentation |
+| `LLM_BASE_URL` | Actions variable or secret | OpenAI-compatible base URL; defaults to Google's documented Gemini endpoint |
+| `LLM_MODEL` | Actions variable or secret | Provider model identifier; defaults to `gemini-3-flash-preview` |
 
 The code is provider-neutral and does not embed a credential. The default model is chosen for short code generation and structured output; the live account's model access and quota remain authoritative.
 

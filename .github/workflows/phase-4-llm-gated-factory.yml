@@ -18,8 +18,8 @@ concurrency:
 
 env:
   PYTHONUNBUFFERED: '1'
-  LLM_BASE_URL: ${{ vars.LLM_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai' }}
-  LLM_MODEL: ${{ vars.LLM_MODEL || 'gemini-3-flash-preview' }}
+  LLM_BASE_URL: ${{ vars.LLM_BASE_URL || secrets.LLM_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta/openai' }}
+  LLM_MODEL: ${{ vars.LLM_MODEL || secrets.LLM_MODEL || 'gemini-3-flash-preview' }}
 
 jobs:
   generate:
