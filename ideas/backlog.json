@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-08-22",
+  "updated_at": "2026-08-23",
   "ideas": [
     {
       "id": "idea-mashup-001",
@@ -173,9 +173,10 @@
       "title": "مفسر سياسة الاسترجاع",
       "pitch": "أداة صغيرة تحول سياسة الاسترجاع الطويلة إلى شرح واضح قبل الشراء.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w39"
     }
   ]
 }
