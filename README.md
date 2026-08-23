@@ -4,9 +4,9 @@ This repository is the foundation for a phone-operated, zero-budget factory that
 
 ## Current state
 
-> **Phase 4 — LLM generation behind verification gate: complete for the manual rollout.**
+> **Phase 5 — LLM provider fallback chain: complete.**
 
-The repository is public, the first manually built Tier A product is live, the weekly heartbeat is active, and Phase 4 now adds a manual LLM generation path behind static and isolated-browser verification. The generated path is accepted only after the safety gate passes; unavailable or rejected generations use a deterministic safe fallback. No deployment to Manus was used or configured.
+The repository is public, the first manually built Tier A product is live, the weekly heartbeat is active, and the manual LLM path now has a real, verified Gemini → Groq failover chain behind static and isolated-browser gates. The generated path is accepted only after every safety check passes; unavailable or rejected generations use a deterministic safe fallback. No deployment to Manus was used or configured.
 
 ## Phase gates
 
@@ -19,7 +19,7 @@ Each phase is a gate. The next phase must not begin until the current phase has 
 | 2 | Weekly automation for the first template | Complete |
 | 3 | Backlog expansion and additional deterministic templates | Complete |
 | 4 | LLM generation behind an automated verification gate | Complete — manual rollout |
-| 5 | LLM provider fallback chain | Not started |
+| 5 | LLM provider fallback chain | Complete — real Gemini-to-Groq failover proven |
 | 6 | Catalog and lightweight analytics | Not started |
 | 7 | Public idea intake and feedback-informed prioritization | Not started |
 | 8 | Hardening and scale | Not started |
@@ -76,4 +76,12 @@ The provider configuration is externalized to `LLM_API_KEY` as a repository secr
 
 The successful real rollout was [run 32605209546](https://github.com/lo77667/repositoryDz/actions/runs/32605209546). It selected **ناقد صفحة الدفع**, accepted the result in `generated` mode, passed static and isolated-browser verification, published [the 2026-w38 product](https://lo77667.github.io/repositoryDz/products/weekly/2026-w38/), returned HTTP 200, and sent a Telegram notification. The live primary action rendered a `0%` result and recommendations. The full record is in [`docs/PHASE-4-TEST-RECORD.md`](docs/PHASE-4-TEST-RECORD.md).
 
-The first real rollout was intentionally retained as evidence of the safe fallback path: it published `2026-w37` in `fallback` mode after the candidate was not accepted or available. It still passed every safety and browser gate. Phase 5, the provider fallback chain, remains not started; the Phase 4 fallback here is a deterministic safety fallback, not a multi-provider chain. LLM scheduling also remains manual-only until a later approved phase.
+The first real rollout was intentionally retained as evidence of the safe fallback path: it published `2026-w37` in `fallback` mode after the candidate was not accepted or available. It still passed every safety and browser gate. The full Phase 5 record is in [`docs/PHASE-5-TEST-RECORD.md`](docs/PHASE-5-TEST-RECORD.md). LLM scheduling remains manual-only, and Phase 6 has not started.
+
+## Phase 5 provider fallback chain
+
+The chain is implemented in [`automation/provider_chain.py`](automation/provider_chain.py) and uses Gemini first, Groq second, and Mistral third when configured. Missing providers are skipped, provider exceptions move immediately to the next slot, and each provider receives one initial request plus at most two repair attempts. Groq uses its documented OpenAI-compatible endpoint and a provider-specific JSON contract; its free-tier request budget is capped to remain below the observed 8,000-token-per-minute limit.
+
+The required real proof is [run 32608059785](https://github.com/lo77667/repositoryDz/actions/runs/32608059785): Gemini was intentionally forced to fail, Groq returned an accepted candidate, the generated product passed both gates, Telegram reported `provider=groq` and `mode=generated`, and [the 2026-w43 product](https://lo77667.github.io/repositoryDz/products/weekly/2026-w43/) returned HTTP 200. The public product was also interacted with successfully. Earlier fallback-only attempts and their corrections are recorded in the test record; they are not counted as multi-provider proof.
+
+**Phase 6 has not started.** The project is intentionally paused at the completed Phase 5 gate pending an explicit instruction to proceed.
