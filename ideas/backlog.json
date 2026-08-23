@@ -59,9 +59,10 @@
       "title": "محول الوقت إلى دقائق",
       "pitch": "تحويل مدة العمل إلى دقائق قابلة للمقارنة والتخطيط.",
       "strategy": "template:converter",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 1,
-      "category": "productivity"
+      "category": "productivity",
+      "built_period": "2026-w46"
     },
     {
       "id": "visual-001",
