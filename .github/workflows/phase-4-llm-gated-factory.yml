@@ -1,4 +1,4 @@
-name: Phase 6 — catalog and analytics with LLM provider fallback
+name: Phase 8 — hardened LLM provider fallback
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: llm-gated-factory-main
+  group: repositoryDz-publish-main
   cancel-in-progress: false
 
 env:
@@ -146,6 +146,12 @@ jobs:
           git config user.name "repositoryDz LLM provider chain"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add ideas/backlog.json index.html catalog.json "${{ steps.build.outputs.path }}"
+          git diff --check
+          git fetch origin main
+          if [[ "$(git rev-parse origin/main)" != "$(git rev-parse HEAD)" ]]; then
+            echo "::error::main advanced while this run was building; refusing a stale push."
+            exit 1
+          fi
           git commit -m "chore: publish idea ${{ steps.build.outputs.idea_id }} via ${{ steps.build.outputs.provider }}"
           git push origin HEAD:main
 
@@ -188,7 +194,7 @@ jobs:
             echo "::error::Telegram secrets are required for the provider-chain success notification."
             exit 1
           fi
-          message="نجح تشغيل المرحلة 6 — ${PRODUCT_PERIOD}\nالفكرة: ${PRODUCT_TITLE}\nالمزود: ${PRODUCT_PROVIDER}\nالنمط: ${PRODUCT_MODE}\nالمنتج: ${PRODUCT_URL}\nالكتالوج: ${CATALOG_URL}"
+          message="نجح تشغيل مسار LLM المحكوم — ${PRODUCT_PERIOD}\nالفكرة: ${PRODUCT_TITLE}\nالمزود: ${PRODUCT_PROVIDER}\nالنمط: ${PRODUCT_MODE}\nالمنتج: ${PRODUCT_URL}\nالكتالوج: ${CATALOG_URL}"
           response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
             --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
@@ -207,7 +213,7 @@ jobs:
             echo "Telegram secrets are unavailable; failure cannot be notified remotely."
             exit 1
           fi
-          message="فشلت المرحلة 5؛ لم يتم نشر ناتج غير متحقق منه. راجع السجل:\n${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          message="فشل مسار LLM المحكوم؛ لم يتم نشر ناتج غير متحقق منه. راجع السجل:\n${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
             --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
