@@ -81,6 +81,7 @@ def collect_products() -> list[dict[str, Any]]:
                 "pitch": pitch,
                 "period": period,
                 "category": str(idea.get("category", "general")),
+                "shape": str(idea.get("shape", "")),
                 "url": url,
                 "source": relative,
                 "lifecycle_status": lifecycle_status,

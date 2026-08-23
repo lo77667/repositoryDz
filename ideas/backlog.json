@@ -10,7 +10,8 @@
       "strategy": "template:idea-mashup",
       "status": "backlog",
       "difficulty": 1,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "shape": "generator"
     },
     {
       "id": "idea-mashup-002",
@@ -20,7 +21,8 @@
       "strategy": "template:idea-mashup",
       "status": "backlog",
       "difficulty": 1,
-      "category": "content"
+      "category": "content",
+      "shape": "generator"
     },
     {
       "id": "idea-mashup-003",
@@ -30,7 +32,8 @@
       "strategy": "template:idea-mashup",
       "status": "backlog",
       "difficulty": 1,
-      "category": "services"
+      "category": "services",
+      "shape": "planner"
     },
     {
       "id": "converter-001",
@@ -40,7 +43,8 @@
       "strategy": "template:converter",
       "status": "backlog",
       "difficulty": 1,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "shape": "converter"
     },
     {
       "id": "converter-002",
@@ -51,7 +55,8 @@
       "status": "built",
       "difficulty": 2,
       "category": "ecommerce",
-      "built_period": "2026-w44"
+      "built_period": "2026-w44",
+      "shape": "converter"
     },
     {
       "id": "converter-003",
@@ -62,7 +67,8 @@
       "status": "built",
       "difficulty": 1,
       "category": "productivity",
-      "built_period": "2026-w46"
+      "built_period": "2026-w46",
+      "shape": "converter"
     },
     {
       "id": "visual-001",
@@ -72,7 +78,8 @@
       "strategy": "template:visual-toy",
       "status": "backlog",
       "difficulty": 2,
-      "category": "design"
+      "category": "design",
+      "shape": "game"
     },
     {
       "id": "visual-002",
@@ -82,7 +89,8 @@
       "strategy": "template:visual-toy",
       "status": "backlog",
       "difficulty": 2,
-      "category": "wellbeing"
+      "category": "wellbeing",
+      "shape": "game"
     },
     {
       "id": "visual-003",
@@ -93,7 +101,8 @@
       "status": "built",
       "difficulty": 2,
       "category": "productivity",
-      "built_period": "2026-w36"
+      "built_period": "2026-w36",
+      "shape": "game"
     },
     {
       "id": "text-001",
@@ -103,7 +112,8 @@
       "strategy": "template:text-tool",
       "status": "backlog",
       "difficulty": 2,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "shape": "editor"
     },
     {
       "id": "text-002",
@@ -113,7 +123,8 @@
       "strategy": "template:text-tool",
       "status": "backlog",
       "difficulty": 2,
-      "category": "productivity"
+      "category": "productivity",
+      "shape": "planner"
     },
     {
       "id": "text-003",
@@ -123,7 +134,8 @@
       "strategy": "template:text-tool",
       "status": "backlog",
       "difficulty": 2,
-      "category": "content"
+      "category": "content",
+      "shape": "editor"
     },
     {
       "id": "phase-1-idea-mashup",
@@ -134,7 +146,8 @@
       "status": "built",
       "difficulty": 1,
       "category": "factory",
-      "built_period": "phase-1"
+      "built_period": "phase-1",
+      "shape": "generator"
     },
     {
       "id": "phase-2-weekly-mashup",
@@ -145,7 +158,8 @@
       "status": "built",
       "difficulty": 1,
       "category": "factory",
-      "built_period": "2026-w34"
+      "built_period": "2026-w34",
+      "shape": "generator"
     },
     {
       "id": "generate-001",
@@ -156,7 +170,8 @@
       "status": "built",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w38"
+      "built_period": "2026-w38",
+      "shape": "reviewer"
     },
     {
       "id": "generate-002",
@@ -167,7 +182,8 @@
       "status": "built",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w37"
+      "built_period": "2026-w37",
+      "shape": "planner"
     },
     {
       "id": "generate-003",
@@ -178,7 +194,8 @@
       "status": "built",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w39"
+      "built_period": "2026-w39",
+      "shape": "explainer"
     },
     {
       "id": "generate-004",
@@ -189,7 +206,8 @@
       "status": "built",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w40"
+      "built_period": "2026-w40",
+      "shape": "checker"
     },
     {
       "id": "generate-005",
@@ -200,7 +218,8 @@
       "status": "built",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w41"
+      "built_period": "2026-w41",
+      "shape": "finder"
     },
     {
       "id": "generate-006",
@@ -211,7 +230,8 @@
       "status": "built",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w42"
+      "built_period": "2026-w42",
+      "shape": "checker"
     },
     {
       "id": "generate-007",
@@ -222,7 +242,8 @@
       "status": "built",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w43"
+      "built_period": "2026-w43",
+      "shape": "checker"
     },
     {
       "id": "generate-008",
@@ -233,7 +254,8 @@
       "status": "built",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w45"
+      "built_period": "2026-w45",
+      "shape": "sorter"
     },
     {
       "id": "generate-009",
@@ -255,7 +277,52 @@
       ],
       "lifecycle_reason": "منتج اختبار المرحلة 8؛ نحتفظ بالنسخة المنشورة ونثبت مسار التقاعد",
       "lifecycle_changed_at": "2026-08-23",
-      "replacement_url": "products/weekly/2026-w45/"
+      "replacement_url": "products/weekly/2026-w45/",
+      "shape": "clarifier"
+    },
+    {
+      "id": "generate-010",
+      "slug": "service-intake-comparator",
+      "title": "مقارن طلبات الخدمة",
+      "pitch": "أداة تساعد مقدم الخدمة على مقارنة طلبات العملاء وترتيبها حسب الملاءمة والجهد.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "services",
+      "shape": "comparator"
+    },
+    {
+      "id": "generate-011",
+      "slug": "brand-tone-card-game",
+      "title": "لعبة نبرة العلامة",
+      "pitch": "تجربة بطاقات قصيرة تساعد الفريق على اختيار نبرة مناسبة لرسالة تسويقية.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "design",
+      "shape": "game"
+    },
+    {
+      "id": "generate-012",
+      "slug": "content-angle-generator",
+      "title": "مولّد زوايا المحتوى",
+      "pitch": "أداة تنشئ زوايا مختلفة لمعالجة موضوع واحد دون تكرار الصياغة أو الجمهور.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "content",
+      "shape": "generator"
+    },
+    {
+      "id": "generate-013",
+      "slug": "wellbeing-reset-planner",
+      "title": "مخطط إعادة الضبط",
+      "pitch": "أداة صغيرة تقترح خطة قصيرة لاستعادة التركيز بعد جلسة عمل مرهقة.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "wellbeing",
+      "shape": "planner"
     }
   ]
 }
