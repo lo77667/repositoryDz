@@ -10,6 +10,7 @@ from html import unescape
 from html.parser import HTMLParser
 
 from analytics_policy import is_allowed_analytics_url
+from security_policy import blocked_capabilities, dangerous_markup, has_credential_like_literal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,6 +104,8 @@ def main() -> None:
         errors.append("HTML language or direction is incorrect")
     if parser.external_dependency:
         errors.append("External script or stylesheet dependency found")
+    for markup in dangerous_markup(html):
+        errors.append(f"Dangerous markup found: {markup}")
     for raw_url in re.findall(r"https?://[^\s\"'<>]+", unescape(html), re.I):
         url = raw_url.rstrip(".,)")
         if not (allow_analytics and url in parser.analytics_urls and is_allowed_analytics_url(url)):
@@ -112,8 +115,10 @@ def main() -> None:
         errors.append("Analytics URL is not on the approved CounterAPI allowlist")
     if parser.analytics_urls and not allow_analytics:
         errors.append("Analytics instrumentation is not allowed before the final gate")
-    if any(token in html for token in ("fetch(", "XMLHttpRequest", "WebSocket")):
-        errors.append("Network-capable browser API found")
+    for token in blocked_capabilities(html):
+        errors.append(f"Blocked capability found: {token}")
+    if has_credential_like_literal(html):
+        errors.append("Credential-like literal found")
     js_path = ROOT / ".phase2_weekly_inline.js"
     js_path.write_text("\n".join(parser.script_contents), encoding="utf-8")
     check = subprocess.run(["node", "--check", str(js_path)], capture_output=True, text=True)

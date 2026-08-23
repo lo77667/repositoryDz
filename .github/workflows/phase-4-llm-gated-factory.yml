@@ -108,7 +108,6 @@ jobs:
           if [[ "${chain_status}" -eq 0 ]]; then
             mode='generated'
             chain_provider="$(python3 -c 'import json; print(json.load(open("/tmp/provider-chain-result.json"))["provider"])')"
-            chain_model="$(python3 -c 'import json; print(json.load(open("/tmp/provider-chain-result.json"))["model"])')"
             echo "Accepted candidate from provider ${chain_provider}."
           else
             echo 'No configured provider produced an accepted candidate; building the safe deterministic fallback.'
@@ -118,7 +117,6 @@ jobs:
               --output "${CANDIDATE_PATH}"
             mode='fallback'
             chain_provider='deterministic-fallback'
-            chain_model='none'
           fi
 
           python3 automation/validate_generated_html.py "${CANDIDATE_PATH}"
@@ -139,7 +137,6 @@ jobs:
             echo "idea_id=${{ steps.pick.outputs.idea_id }}"
             echo "mode=${mode}"
             echo "provider=${chain_provider}"
-            echo "model=${chain_model}"
           } >> "${GITHUB_OUTPUT}"
 
       - name: Commit and push the accepted artifact and backlog state

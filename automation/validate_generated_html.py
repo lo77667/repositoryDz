@@ -11,27 +11,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from analytics_policy import is_allowed_analytics_url
+from security_policy import blocked_capabilities, dangerous_markup, has_credential_like_literal
 
 MAX_BYTES = 220_000
-BLOCKED_TOKENS = (
-    "fetch(",
-    "XMLHttpRequest",
-    "WebSocket",
-    "EventSource",
-    "sendBeacon",
-    "navigator.sendBeacon",
-    "<iframe",
-    "<object",
-    "<embed",
-    "javascript:",
-    "import(",
-)
-SECRET_PATTERNS = (
-    r"sk-[A-Za-z0-9]{10,}",
-    r"gh[pousr]_[A-Za-z0-9_]{20,}",
-    r"\b\d{8,}:[A-Za-z0-9_-]{20,}",
-    r"AIza[A-Za-z0-9_-]{20,}",
-)
 
 
 class SafetyParser(HTMLParser):
@@ -111,10 +93,10 @@ def validate(path: Path, allow_analytics: bool = False) -> list[str]:
     if parser.primary_actions != 1:
         errors.append(f"Expected exactly one data-factory-action=primary control; found {parser.primary_actions}")
 
-    lowered = html.lower()
-    for token in BLOCKED_TOKENS:
-        if token.lower() in lowered:
-            errors.append(f"Blocked capability found: {token}")
+    for token in blocked_capabilities(html):
+        errors.append(f"Blocked capability found: {token}")
+    for markup in dangerous_markup(html):
+        errors.append(f"Dangerous markup found: {markup}")
     for raw_url in re.findall(r"https?://[^\s\"'<>]+", unescape(html), re.I):
         url = raw_url.rstrip(".,)")
         if not (allow_analytics and url in parser.analytics_urls and is_allowed_analytics_url(url)):
@@ -124,10 +106,8 @@ def validate(path: Path, allow_analytics: bool = False) -> list[str]:
         errors.append("Analytics URL is not on the approved CounterAPI allowlist")
     if parser.analytics_urls and not allow_analytics:
         errors.append("Analytics instrumentation is not allowed before the final gate")
-    for pattern in SECRET_PATTERNS:
-        if re.search(pattern, html):
-            errors.append("Credential-like literal found")
-            break
+    if has_credential_like_literal(html):
+        errors.append("Credential-like literal found")
 
     js_path = path.with_suffix(".generated.js")
     js_path.write_text("\n".join(parser.script_contents), encoding="utf-8")
