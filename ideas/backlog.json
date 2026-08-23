@@ -229,9 +229,10 @@
       "title": "مرتب أسباب الاسترجاع",
       "pitch": "أداة تساعد المتجر على تنظيم أسباب الاسترجاع واكتشاف الأنماط المتكررة في الملاحظات.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w45"
     }
   ]
 }
