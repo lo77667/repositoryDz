@@ -48,9 +48,10 @@
       "title": "محول أثر الخصم",
       "pitch": "حساب المبيعات الإضافية اللازمة لتعويض نسبة خصم محددة.",
       "strategy": "template:converter",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 2,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w44"
     },
     {
       "id": "converter-003",

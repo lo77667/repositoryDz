@@ -10,6 +10,14 @@
       "source": "products/idea-mashup/index.html"
     },
     {
+      "title": "محول أثر الخصم",
+      "pitch": "حساب المبيعات الإضافية اللازمة لتعويض نسبة خصم محددة.",
+      "period": "2026-w44",
+      "category": "ecommerce",
+      "url": "products/weekly/2026-w44/",
+      "source": "products/weekly/2026-w44/index.html"
+    },
+    {
       "title": "مدقق براهين الكتالوج",
       "pitch": "أداة تساعد المتجر على مراجعة ما إذا كانت مزايا المنتج مدعومة بمعلومات واضحة.",
       "period": "2026-w43",
