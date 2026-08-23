@@ -1,0 +1,91 @@
+name: "فكرة منتج مصغّر"
+description: "اقترح أداة صغيرة يمكن بناؤها ونشرها بأمان من المصنع."
+title: "[فكرة] "
+labels:
+  - "idea:submitted"
+  - "idea:triage"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        شكرًا لاقتراحك. هذا النموذج مخصص لأفكار أدوات صغيرة تعمل من المتصفح.
+
+        لا ترسل مفاتيح API أو كلمات مرور أو بيانات عملاء أو معلومات شخصية أو محتوى سري. الفكرة والقصة المكتوبة هنا ستكونان عامتين في مستودع مفتوح.
+
+  - type: input
+    id: product_title
+    attributes:
+      label: "عنوان الفكرة"
+      description: "اكتب عنوانًا قصيرًا وواضحًا للأداة."
+      placeholder: "مثال: محول هامش الربح"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "المشكلة التي يحلها المنتج"
+      description: "ما المشكلة العملية؟ ومن يعاني منها؟"
+      placeholder: "يواجه ... صعوبة في ... مما يؤدي إلى ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: product_pitch
+    attributes:
+      label: "وصف المنتج المقترح"
+      description: "صف ما الذي يفعله المنتج في جملة أو فقرة قصيرة."
+      placeholder: "أداة صغيرة تسمح للمستخدم بأن ..."
+    validations:
+      required: true
+
+  - type: input
+    id: audience
+    attributes:
+      label: "الجمهور المستهدف"
+      description: "من سيستخدم الأداة؟"
+      placeholder: "أصحاب المتاجر الصغيرة"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: strategy_hint
+    attributes:
+      label: "الشكل الأقرب للأداة"
+      description: "اختر الشكل التقريبي؛ سيبقى القرار النهائي للمراجعة."
+      options:
+        - "محول أو حاسبة"
+        - "أداة نصية"
+        - "لعبة أو تجربة بصرية"
+        - "مولد أفكار أو محتوى"
+        - "أداة أخرى"
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "دليل الحاجة أو مثال استخدام"
+      description: "اذكر ملاحظة متكررة أو موقفًا يوضح لماذا ستكون الأداة مفيدة. لا تضع بيانات شخصية أو بيانات عملاء."
+      placeholder: "تتكرر هذه المشكلة عندما ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: "قيود أو ملاحظات إضافية"
+      description: "اختياري. اذكر ما يجب أن تتجنبه الأداة أو ما يجعلها آمنة ومفيدة."
+      placeholder: "يجب أن تعمل محليًا داخل المتصفح، ولا تحتاج إلى حساب."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: "الإقرار"
+      options:
+        - label: "أفهم أن هذا الاقتراح عام وسيُراجع قبل إدخاله إلى backlog أو بناء منتج منه."
+          required: true
+        - label: "لم أرسل أسرارًا أو مفاتيح أو بيانات شخصية أو بيانات عملاء."
+          required: true

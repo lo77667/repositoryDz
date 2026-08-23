@@ -1,0 +1,159 @@
+name: Phase 7 — public idea intake triage
+
+on:
+  issues:
+    types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'رقم قضية فكرة موجودة لإعادة الفرز يدويًا'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: phase7-idea-${{ github.event.issue.number || inputs.issue_number }}
+  cancel-in-progress: false
+
+env:
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  triage:
+    name: Validate and rank one public product idea
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'idea:submitted') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE_NUMBER: ${{ inputs.issue_number || github.event.issue.number }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch the issue without executing its contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "${ISSUE_NUMBER}" =~ ^[0-9]+$ ]]; then
+            echo '::error::Issue number must be numeric.'
+            exit 1
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}" > /tmp/issue.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          issue = json.loads(Path('/tmp/issue.json').read_text(encoding='utf-8'))
+          labels = [item.get('name', '') for item in issue.get('labels', [])]
+          if 'idea:submitted' not in labels and '${{ github.event_name }}' != 'workflow_dispatch':
+              raise SystemExit('Issue is not marked as an idea-form submission.')
+          print({'number': issue.get('number'), 'state': issue.get('state'), 'labels': labels})
+          PY
+
+      - name: Run deterministic triage without touching backlog
+        id: triage
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          python3 automation/triage_idea.py \
+            --issue-json /tmp/issue.json \
+            --backlog ideas/backlog.json \
+            --output /tmp/triage.json > /tmp/triage-summary.json
+          triage_status=$?
+          set -e
+          if [[ "${triage_status}" -ne 0 && "${triage_status}" -ne 2 ]]; then
+            echo '::error::Triage failed unexpectedly.'
+            exit "${triage_status}"
+          fi
+          cat /tmp/triage-summary.json
+          status="$(python3 -c 'import json; print(json.load(open("/tmp/triage.json"))["status"])')"
+          echo "status=${status}" >> "${GITHUB_OUTPUT}"
+          echo "triage_status=${triage_status}" >> "${GITHUB_OUTPUT}"
+
+      - name: Render a safe review comment
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 automation/render_triage_comment.py \
+            --input /tmp/triage.json \
+            --comment-output /tmp/triage-comment.md \
+            --telegram-output /tmp/telegram-message.txt
+          cat /tmp/triage-comment.md >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Update the single triage comment
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='repositoryDz:phase7-triage'
+          existing_id="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" --jq '.[] | select(.body | contains("repositoryDz:phase7-triage")) | .id' | tail -n 1 || true)"
+          if [[ -n "${existing_id}" ]]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing_id}" \
+              -f body="$(cat /tmp/triage-comment.md)" >/dev/null
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+              -f body="$(cat /tmp/triage-comment.md)" >/dev/null
+          fi
+
+      - name: Apply the triage status label
+        env:
+          TRIAGE_STATUS: ${{ steps.triage.outputs.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${TRIAGE_STATUS}" in
+            ready-for-review) status_label='idea:ready-for-review' ;;
+            needs-info) status_label='idea:needs-info' ;;
+            duplicate) status_label='idea:duplicate' ;;
+            rejected) status_label='idea:rejected' ;;
+            *) echo '::error::Unknown triage status.'; exit 1 ;;
+          esac
+          for label in idea:triage idea:needs-info idea:duplicate idea:rejected idea:ready-for-review; do
+            if [[ "${label}" != "${status_label}" ]]; then
+              gh issue edit "${ISSUE_NUMBER}" --repo "${GITHUB_REPOSITORY}" --remove-label "${label}" >/dev/null 2>&1 || true
+            fi
+          done
+          gh issue edit "${ISSUE_NUMBER}" --repo "${GITHUB_REPOSITORY}" --add-label "${status_label}" >/dev/null
+
+      - name: Send triage notification
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo '::error::Telegram secrets are required for phase 7 triage notifications.'
+            exit 1
+          fi
+          response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=$(cat /tmp/telegram-message.txt)")"
+          grep -q '"ok":true' <<<"${response}"
+
+      - name: Notify issue and Telegram about a processing failure
+        if: ${{ failure() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          failure_message="فشلت معالجة فكرة المرحلة 7 للقضية #${ISSUE_NUMBER}. لم يتم تعديل backlog ولم يُنشر منتج. راجع سجل التشغيل: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -f body="${failure_message}" >/dev/null 2>&1 || true
+          if [[ -n "${TELEGRAM_BOT_TOKEN:-}" && -n "${TELEGRAM_CHAT_ID:-}" ]]; then
+            curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+              --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+              --data-urlencode "text=${failure_message}" >/dev/null || true
+          fi

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "مشكلات تقنية أو أخطاء"
+    url: "https://github.com/lo77667/repositoryDz/issues"
+    about: "استخدم نموذجًا مناسبًا أو افتح قضية واضحة دون إرسال أسرار أو بيانات شخصية."
