@@ -67,7 +67,7 @@ def main() -> None:
         for attempt in range(1, args.max_repairs + 2):
             try:
                 candidate = request_candidate(
-                    provider["key"], provider["base_url"], provider["model"], prompt, repair_context
+                    provider["key"], provider["base_url"], provider["model"], prompt, repair_context, provider["name"]
                 )
                 output.write_text(candidate + "\n", encoding="utf-8")
                 failures = verify(output)

@@ -75,20 +75,31 @@ def normalize_html(content: str) -> str:
     return text
 
 
-def request_candidate(api_key: str, base_url: str, model: str, user_prompt: str, repair_context: str | None = None) -> str:
+def request_candidate(api_key: str, base_url: str, model: str, user_prompt: str, repair_context: str | None = None, provider_name: str = "gemini") -> str:
     prompt = user_prompt
     if repair_context:
         prompt += "\n\nThe previous candidate failed these automated checks. Return a corrected complete document, not a patch:\n" + repair_context
+    if provider_name == "groq":
+        # Groq's documented openai/gpt-oss models accept best-effort JSON Schema.
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {"name": "html_candidate", "strict": False, "schema": SCHEMA},
+        }
+    elif provider_name == "mistral":
+        # Keep the common JSON object contract and enforce the exact shape locally.
+        response_format = {"type": "json_object"}
+    else:
+        response_format = {
+            "type": "json_schema",
+            "json_schema": {"name": "html_candidate", "strict": True, "schema": SCHEMA},
+        }
     body = {
         "model": model,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": {"name": "html_candidate", "strict": True, "schema": SCHEMA},
-        },
+        "response_format": response_format,
         "temperature": 0.2,
         "max_tokens": 12000,
     }

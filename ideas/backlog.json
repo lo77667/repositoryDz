@@ -188,6 +188,16 @@
       "difficulty": 3,
       "category": "ecommerce",
       "built_period": "2026-w40"
+    },
+    {
+      "id": "generate-005",
+      "slug": "product-faq-gap-finder",
+      "title": "كاشف فجوات أسئلة المنتج",
+      "pitch": "أداة تساعد المتجر على اكتشاف الأسئلة المهمة التي لا يجيب عنها وصف المنتج.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "ecommerce"
     }
   ]
 }
