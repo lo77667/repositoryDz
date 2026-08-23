@@ -106,7 +106,12 @@ def request_candidate(api_key: str, base_url: str, model: str, user_prompt: str,
     req = request.Request(
         endpoint(base_url),
         data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "repositoryDz-phase5/1.0 (https://github.com/lo77667/repositoryDz)",
+        },
         method="POST",
     )
     try:

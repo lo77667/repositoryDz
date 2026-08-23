@@ -199,6 +199,16 @@
       "difficulty": 3,
       "category": "ecommerce",
       "built_period": "2026-w41"
+    },
+    {
+      "id": "generate-006",
+      "slug": "promo-claim-checker",
+      "title": "مدقق ادعاءات العرض",
+      "pitch": "أداة تساعد المتجر على فحص وضوح ادعاءات العرض قبل نشرها للعملاء.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "ecommerce"
     }
   ]
 }
