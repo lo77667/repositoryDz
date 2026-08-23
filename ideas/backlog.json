@@ -217,9 +217,10 @@
       "title": "مدقق براهين الكتالوج",
       "pitch": "أداة تساعد المتجر على مراجعة ما إذا كانت مزايا المنتج مدعومة بمعلومات واضحة.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w43"
     }
   ]
 }

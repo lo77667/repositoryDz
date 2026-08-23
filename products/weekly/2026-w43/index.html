@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مدقق براهين الكتالوج</title>
+<style>body{font-family:Arial,sans-serif;margin:2rem;background:#f9f9f9;color:#333;}label{display:block;margin-top:1rem;}textarea{width:100%;height:100px;margin-top:0.5rem;}button{margin-top:1rem;padding:0.5rem 1rem;font-size:1rem;}#status{margin-top:1rem;padding:0.5rem;background:#e0ffe0;border:1px solid #8bc34a;color:#2e7d32;}</style>
+</head>
+<body>
+<h1>مدقق براهين الكتالوج</h1>
+<p>أداة تساعد المتجر على مراجعة ما إذا كانت مزايا المنتج مدعومة بمعلومات واضحة.</p>
+<label for="feature">الميزة:</label>
+<input type="text" id="feature" placeholder="أدخل ميزة المنتج" style="width:100%;margin-top:0.5rem;">
+<label for="support">معلومات الدعم:</label>
+<textarea id="support" placeholder="أدخل معلومات تدعم الميزة"></textarea>
+<button data-factory-action="primary">تحقق</button>
+<button id="reset">إعادة تعيين</button>
+<div id="status" aria-live="polite" role="status"></div>
+<script>document.querySelector('[data-factory-action="primary"]').addEventListener('click',function(){var feature=document.getElementById('feature').value.trim().toLowerCase();var support=document.getElementById('support').value.trim().toLowerCase();var status=document.getElementById('status');if(!feature){status.textContent='الرجاء إدخال ميزة المنتج.';return;}if(!support){status.textContent='الرجاء إدخال معلومات الدعم.';return;}if(support.includes(feature)){status.textContent='معلومات كافية: الميزة مدعومة.';}else{status.textContent='معلومات غير كافية: لا توجد إشارة للميزة في المعلومات.';}});document.getElementById('reset').addEventListener('click',function(){document.getElementById('feature').value='';document.getElementById('support').value='';document.getElementById('status').textContent='';});</script>
+</body>
+</html>
