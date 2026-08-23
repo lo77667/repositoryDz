@@ -321,10 +321,11 @@
       "title": "مخطط إعادة الضبط",
       "pitch": "أداة صغيرة تقترح خطة قصيرة لاستعادة التركيز بعد جلسة عمل مرهقة.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
       "category": "wellbeing",
-      "shape": "planner"
+      "shape": "planner",
+      "built_period": "2026-w50"
     }
   ]
 }
