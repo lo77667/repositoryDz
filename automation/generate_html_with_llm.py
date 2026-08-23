@@ -93,6 +93,7 @@ def request_candidate(api_key: str, base_url: str, model: str, user_prompt: str,
             "type": "json_schema",
             "json_schema": {"name": "html_candidate", "strict": True, "schema": SCHEMA},
         }
+    max_tokens = 6000 if provider_name == "groq" else 12000
     body = {
         "model": model,
         "messages": [
@@ -101,7 +102,7 @@ def request_candidate(api_key: str, base_url: str, model: str, user_prompt: str,
         ],
         "response_format": response_format,
         "temperature": 0.2,
-        "max_tokens": 12000,
+        "max_tokens": max_tokens,
     }
     req = request.Request(
         endpoint(base_url),

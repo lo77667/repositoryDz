@@ -210,6 +210,16 @@
       "difficulty": 3,
       "category": "ecommerce",
       "built_period": "2026-w42"
+    },
+    {
+      "id": "generate-007",
+      "slug": "catalog-proof-checker",
+      "title": "مدقق براهين الكتالوج",
+      "pitch": "أداة تساعد المتجر على مراجعة ما إذا كانت مزايا المنتج مدعومة بمعلومات واضحة.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "ecommerce"
     }
   ]
 }
