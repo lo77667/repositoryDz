@@ -1,4 +1,4 @@
-name: Phase 4 — LLM generation with provider fallback chain
+name: Phase 5 — LLM provider fallback chain
 
 on:
   workflow_dispatch:
@@ -8,6 +8,11 @@ on:
         required: false
         type: string
         default: ''
+      force_primary_failure:
+        description: 'اختبار انتقال السلسلة: عطّل Gemini عمدًا وانتقل إلى Groq'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -27,7 +32,7 @@ env:
 
 jobs:
   generate:
-    name: Generate through providers and verify safely
+    name: Generate through the provider fallback chain and verify safely
     runs-on: ubuntu-latest
     timeout-minutes: 25
     outputs:
@@ -38,7 +43,6 @@ jobs:
       idea_id: ${{ steps.build.outputs.idea_id }}
       mode: ${{ steps.build.outputs.mode }}
       provider: ${{ steps.build.outputs.provider }}
-      model: ${{ steps.build.outputs.model }}
     steps:
       - name: Check out the main branch
         uses: actions/checkout@v4
@@ -77,6 +81,7 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_FALLBACK_API_KEY: ${{ secrets.LLM_FALLBACK_API_KEY }}
           LLM_SECONDARY_API_KEY: ${{ secrets.LLM_SECONDARY_API_KEY }}
+          PHASE5_FORCE_PRIMARY_FAILURE: ${{ inputs.force_primary_failure }}
           WEEKLY_PERIOD: ${{ steps.pick.outputs.period }}
           SELECTED_IDEA: ${{ steps.pick.outputs.idea_json }}
           CANDIDATE_PATH: products/weekly/${{ steps.pick.outputs.period }}/index.html

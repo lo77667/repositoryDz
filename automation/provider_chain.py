@@ -53,7 +53,11 @@ def main() -> None:
     history: list[dict[str, object]] = []
     provider_attempted = False
 
-    for provider in configured_providers():
+    providers = configured_providers()
+    if os.environ.get("PHASE5_FORCE_PRIMARY_FAILURE", "").lower() in {"1", "true", "yes"} and providers:
+        providers[0] = {**providers[0], "base_url": "http://127.0.0.1:9", "model": "forced-primary-failure"}
+
+    for provider in providers:
         if not provider["key"]:
             history.append({"provider": provider["name"], "status": "skipped", "reason": "not configured"})
             continue
@@ -67,8 +71,9 @@ def main() -> None:
                 )
                 output.write_text(candidate + "\n", encoding="utf-8")
                 failures = verify(output)
-            except Exception as exc:  # Provider failures are data for the next provider, not a crash loop.
-                failures = [str(exc)]
+            except Exception as exc:  # Provider failures move immediately to the next configured provider.
+                provider_history.append({"attempt": attempt, "failures": [str(exc)], "provider_error": True})
+                break
             provider_history.append({"attempt": attempt, "failures": failures})
             if not failures:
                 result = {
@@ -77,6 +82,7 @@ def main() -> None:
                     "model": provider["model"],
                     "attempts": attempt,
                     "history": provider_history,
+                    "providers": history + [{"provider": provider["name"], "status": "accepted", "attempts": attempt}],
                 }
                 history.append({"provider": provider["name"], "status": "accepted", "attempts": attempt})
                 print(json.dumps(result, ensure_ascii=False))

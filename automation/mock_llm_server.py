@@ -20,7 +20,12 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404)
             return
         if Handler.cursor >= len(Handler.responses):
-            self.send_error(500, "mock response queue exhausted")
+            encoded = b'{"error":{"message":"mock response queue exhausted"}}'
+            self.send_response(500)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(encoded)))
+            self.end_headers()
+            self.wfile.write(encoded)
             return
         content = Handler.responses[Handler.cursor]
         Handler.cursor += 1
