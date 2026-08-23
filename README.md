@@ -112,4 +112,12 @@ The weekly and LLM publishing workflows now share `repositoryDz-publish-main`, r
 
 Real evidence includes [Tier A run 32611679734](https://github.com/lo77667/repositoryDz/actions/runs/32611679734) for `2026-w46`, [LLM run 32611883144](https://github.com/lo77667/repositoryDz/actions/runs/32611883144) for `2026-w47`, the intentionally rejected no-confirm lifecycle run [32612039113](https://github.com/lo77667/repositoryDz/actions/runs/32612039113), the confirmed retirement run [32612061452](https://github.com/lo77667/repositoryDz/actions/runs/32612061452), and the post-pinning guard [32612331756](https://github.com/lo77667/repositoryDz/actions/runs/32612331756). The public catalog and original retired product remained reachable, while the replacement path also loaded successfully. The full record is in [`docs/PHASE-8-TEST-RECORD.md`](docs/PHASE-8-TEST-RECORD.md).
 
-**Phase 8 is complete. Phase 9 has not started.**
+## Diversity hardening — deterministic idea rotation
+
+The generate picker now reads the last four active weekly entries from [`catalog.json`](catalog.json) and avoids their recent categories and shapes whenever an alternative exists. The rule applies only to the exact `generate` strategy; deterministic Tier A template selection is unchanged. A missing or invalid catalog, or a backlog with no outside alternative, triggers a safe fallback to the original candidate set rather than failing the factory.
+
+Backlog records now carry a `shape` such as `checker`, `converter`, `comparator`, `game`, `generator`, or `planner`. Four new generate candidates were added outside the repeated ecommerce cluster: services/comparator, design/game, content/generator, and wellbeing/planner. The implementation and contract are in [`docs/DIVERSITY-HARDENING-DESIGN.md`](docs/DIVERSITY-HARDENING-DESIGN.md), and the test record is in [`docs/DIVERSITY-HARDENING-TEST-RECORD.md`](docs/DIVERSITY-HARDENING-TEST-RECORD.md).
+
+The real [2026-w48 run](https://github.com/lo77667/repositoryDz/actions/runs/32612951967) selected `generate-010` as `services/comparator`, breaking both the recent ecommerce cluster and the recent checker/sorter/converter shape cluster. The selected artifact passed all product and catalog gates and Telegram, but the provider chain used the safe deterministic fallback because Groq had reached its free TPM limit; this is recorded honestly and is not counted as a successful LLM generation.
+
+**The diversity safeguard is complete. Phase 9 has not started.**
