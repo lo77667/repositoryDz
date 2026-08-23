@@ -19,9 +19,9 @@
       "category": "ecommerce",
       "url": "products/weekly/2026-w47/",
       "source": "products/weekly/2026-w47/index.html",
-      "lifecycle_status": "built",
-      "lifecycle_reason": "",
-      "replacement_url": ""
+      "lifecycle_status": "retired",
+      "lifecycle_reason": "منتج اختبار المرحلة 8؛ نحتفظ بالنسخة المنشورة ونثبت مسار التقاعد",
+      "replacement_url": "products/weekly/2026-w45/"
     },
     {
       "title": "محول الوقت إلى دقائق",

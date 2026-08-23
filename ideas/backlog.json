@@ -241,10 +241,21 @@
       "title": "موضح سياسة الشحن",
       "pitch": "أداة تساعد المتجر على تحويل سياسة الشحن المعقدة إلى نقاط واضحة قابلة للمراجعة.",
       "strategy": "generate",
-      "status": "built",
+      "status": "retired",
       "difficulty": 3,
       "category": "ecommerce",
-      "built_period": "2026-w47"
+      "built_period": "2026-w47",
+      "lifecycle_events": [
+        {
+          "from": "built",
+          "to": "retired",
+          "reason": "منتج اختبار المرحلة 8؛ نحتفظ بالنسخة المنشورة ونثبت مسار التقاعد",
+          "changed_at": "2026-08-23"
+        }
+      ],
+      "lifecycle_reason": "منتج اختبار المرحلة 8؛ نحتفظ بالنسخة المنشورة ونثبت مسار التقاعد",
+      "lifecycle_changed_at": "2026-08-23",
+      "replacement_url": "products/weekly/2026-w45/"
     }
   ]
 }
