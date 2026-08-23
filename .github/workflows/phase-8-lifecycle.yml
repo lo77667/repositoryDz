@@ -1,0 +1,161 @@
+name: Phase 8 — product lifecycle management
+
+on:
+  workflow_dispatch:
+    inputs:
+      idea_id:
+        description: 'معرّف الفكرة في ideas/backlog.json'
+        required: true
+        type: string
+      status:
+        description: 'الحالة الجديدة'
+        required: true
+        type: choice
+        options:
+          - retired
+          - revisit
+          - backlog
+      reason:
+        description: 'سبب واضح للتغيير'
+        required: true
+        type: string
+      replacement_url:
+        description: 'رابط داخلي اختياري مثل products/weekly/2026-wNN/'
+        required: false
+        type: string
+        default: ''
+      confirm:
+        description: 'تأكيد الكتابة إلى backlog ونشر تحديث الكتالوج'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repositoryDz-publish-main
+  cancel-in-progress: false
+
+env:
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  lifecycle:
+    name: Apply a confirmed lifecycle transition
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      LIFECYCLE_ID: ${{ inputs.idea_id }}
+      LIFECYCLE_STATUS: ${{ inputs.status }}
+      LIFECYCLE_REASON: ${{ inputs.reason }}
+      LIFECYCLE_REPLACEMENT: ${{ inputs.replacement_url }}
+      LIFECYCLE_CONFIRM: ${{ inputs.confirm }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate and apply the requested transition
+        id: transition
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(
+            --id "${LIFECYCLE_ID}"
+            --status "${LIFECYCLE_STATUS}"
+            --reason "${LIFECYCLE_REASON}"
+          )
+          if [[ -n "${LIFECYCLE_REPLACEMENT:-}" ]]; then
+            args+=(--replacement-url "${LIFECYCLE_REPLACEMENT}")
+          fi
+          if [[ "${LIFECYCLE_CONFIRM}" == 'true' ]]; then
+            args+=(--confirm)
+          else
+            echo '::error::confirm must be true; no lifecycle change was written.'
+            python3 automation/manage_lifecycle.py "${args[@]}"
+            exit 1
+          fi
+          python3 automation/manage_lifecycle.py "${args[@]}"
+
+      - name: Rebuild and validate the catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 automation/build_catalog.py
+          python3 automation/instrument_analytics.py index.html
+          python3 automation/validate_catalog.py index.html
+          python3 -m pip install --disable-pip-version-check --no-input --quiet playwright
+          python3 -m playwright install --with-deps chromium
+          python3 automation/verify_catalog_browser.py index.html
+          python3 -m json.tool ideas/backlog.json >/dev/null
+          git diff --check
+
+      - name: Commit lifecycle metadata and catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "repositoryDz lifecycle manager"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ideas/backlog.json index.html catalog.json
+          git fetch origin main
+          if [[ "$(git rev-parse origin/main)" != "$(git rev-parse HEAD)" ]]; then
+            echo "::error::main advanced while lifecycle was being prepared; refusing a stale push."
+            exit 1
+          fi
+          git commit -m "chore: update lifecycle for ${LIFECYCLE_ID}"
+          git push origin HEAD:main
+
+      - name: Wait for the catalog Pages path
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://lo77667.github.io/repositoryDz/'
+          for attempt in $(seq 1 24); do
+            if curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "${url}"; then
+              echo "Published catalog is reachable: ${url}"
+              exit 0
+            fi
+            echo "Pages is still building (attempt ${attempt}/24): ${url}"
+            sleep 10
+          done
+          echo '::error::Catalog Pages URL did not become reachable in time.'
+          exit 1
+
+      - name: Send lifecycle notification
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo '::error::Telegram secrets are required for lifecycle notifications.'
+            exit 1
+          fi
+          message="تم تحديث دورة حياة الفكرة — ${LIFECYCLE_ID}\nالحالة: ${LIFECYCLE_STATUS}\nالسبب: ${LIFECYCLE_REASON}\nالكتالوج: https://lo77667.github.io/repositoryDz/"
+          response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+          grep -q '"ok":true' <<<"${response}"
+
+      - name: Send lifecycle failure notification
+        if: ${{ failure() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          message="فشل تحديث دورة حياة الفكرة ${LIFECYCLE_ID}; لم يُعتمد النشر. راجع السجل: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [[ -n "${TELEGRAM_BOT_TOKEN:-}" && -n "${TELEGRAM_CHAT_ID:-}" ]]; then
+            curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+              --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+              --data-urlencode "text=${message}" >/dev/null || true
+          fi
