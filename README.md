@@ -120,4 +120,10 @@ Backlog records now carry a `shape` such as `checker`, `converter`, `comparator`
 
 The real [2026-w48 run](https://github.com/lo77667/repositoryDz/actions/runs/32612951967) selected `generate-010` as `services/comparator`, breaking both the recent ecommerce cluster and the recent checker/sorter/converter shape cluster. The selected artifact passed all product and catalog gates and Telegram, but the provider chain used the safe deterministic fallback because Groq had reached its free TPM limit; this is recorded honestly and is not counted as a successful LLM generation.
 
-**The diversity safeguard is complete. Phase 9 has not started.**
+## Prompt hardening for generated HTML
+
+The generator now places five critical non-negotiable rules at the beginning of `SYSTEM_PROMPT` and a self-check reminder at the end. The rules require a complete document from `<!DOCTYPE html>` through `</html>`, Arabic `lang="ar" dir="rtl"`, zero inline `on*` event handlers, exactly one `data-factory-action="primary"`, and fully offline execution. This is a prompt-only change; provider ordering, JSON contracts, token caps, and safety gates remain unchanged.
+
+The baseline [w48 run](https://github.com/lo77667/repositoryDz/actions/runs/32612951967) had Gemini reject twice and Groq reject twice before deterministic fallback. After hardening, [w49](https://github.com/lo77667/repositoryDz/actions/runs/32614004936) had Gemini reject once for an incomplete document and Groq accept on its first attempt, while [w50](https://github.com/lo77667/repositoryDz/actions/runs/32614120217) had Gemini accept on its first attempt. Both generated products passed static and Chromium gates, Pages, catalog, and Telegram; the w50 product was also interacted with on the public URL. Two weeks are evidence of direction, not statistical proof, so the repair-focused prompt and further shape-specific instructions remain deferred pending more observations. Full evidence is in [`docs/PROMPT-HARDENING-TEST-RECORD.md`](docs/PROMPT-HARDENING-TEST-RECORD.md), with the public browser notes in [`docs/PROMPT-HARDENING-PUBLIC-FINDINGS.md`](docs/PROMPT-HARDENING-PUBLIC-FINDINGS.md).
+
+**The prompt hardening checkpoint is complete. Phase 9 has not started.**
