@@ -298,10 +298,11 @@
       "title": "لعبة نبرة العلامة",
       "pitch": "تجربة بطاقات قصيرة تساعد الفريق على اختيار نبرة مناسبة لرسالة تسويقية.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
       "category": "design",
-      "shape": "game"
+      "shape": "game",
+      "built_period": "2026-w49"
     },
     {
       "id": "generate-012",
