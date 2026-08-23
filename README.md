@@ -21,7 +21,7 @@ Each phase is a gate. The next phase must not begin until the current phase has 
 | 4 | LLM generation behind an automated verification gate | Complete — manual rollout |
 | 5 | LLM provider fallback chain | Complete — real Gemini-to-Groq failover proven |
 | 6 | Catalog and lightweight analytics | Complete — Tier A and LLM paths, public browser proof |
-| 7 | Public idea intake and feedback-informed prioritization | Not started |
+| 7 | Public idea intake and feedback-informed prioritization | Complete — real issue triage and Telegram proof |
 | 8 | Hardening and scale | Not started |
 
 ## Operating constraints
@@ -92,4 +92,14 @@ The trusted post-processing step [`automation/instrument_analytics.py`](automati
 
 The real Tier A verification was [run 32609912761](https://github.com/lo77667/repositoryDz/actions/runs/32609912761), which published [2026-w44](https://lo77667.github.io/repositoryDz/products/weekly/2026-w44/) and grew the catalog to 12 products. The real LLM verification was [run 32610019306](https://github.com/lo77667/repositoryDz/actions/runs/32610019306), which accepted Gemini output for `2026-w45`, published [مرتب أسباب الاسترجاع](https://lo77667.github.io/repositoryDz/products/weekly/2026-w45/), and grew the catalog to 13 products. Both runs passed the final static and isolated-browser gates, Pages returned HTTP 200, and Telegram success steps completed.
 
-**Phase 6 is complete. Phase 7 has not started.**
+## Phase 7 public idea intake and feedback-informed prioritization
+
+The public Arabic [GitHub Issue Form](.github/ISSUE_TEMPLATE/product-idea.yml) collects a structured product title, problem, pitch, audience, strategy hint, evidence of need, optional constraints, and explicit no-secret/no-personal-data confirmations. The form is public by design, and its contents are treated as public data. Blank issues remain available for existing technical reports, while the Phase 7 workflow processes only issues carrying `idea:submitted` or issues selected manually.
+
+The deterministic triage tool [`automation/triage_idea.py`](automation/triage_idea.py) validates field presence and length, rejects secret-like patterns, links, HTML execution elements, and network APIs, normalizes Arabic text for comparison, and compares the proposal against the committed backlog. It returns `ready-for-review`, `needs-info`, `duplicate`, or `rejected`, with an explainable score out of 100. It never writes to `ideas/backlog.json` and never executes issue text.
+
+The workflow [`Phase 7 — public idea intake triage`](.github/workflows/phase-7-idea-intake.yml) updates one marked review comment, applies the status label, and sends a Telegram notification. It has `contents: read` and `issues: write` only; it has no `git push`, no product build, and no publication path. `idea:accepted` remains a human decision.
+
+The real successful case was [Issue #1](https://github.com/lo77667/repositoryDz/issues/1) and [run 32610704529](https://github.com/lo77667/repositoryDz/actions/runs/32610704529): **مراجع وضوح عرض الشحن** received `ready-for-review` with `94/100`, a `template:text-tool` suggestion, and an `ecommerce` category. The negative cases were [run 32610788025](https://github.com/lo77667/repositoryDz/actions/runs/32610788025) for missing information, [run 32610788444](https://github.com/lo77667/repositoryDz/actions/runs/32610788444) for a duplicate, and [run 32610788924](https://github.com/lo77667/repositoryDz/actions/runs/32610788924) for unsafe content. All four workflows succeeded, Telegram steps completed, and the backlog SHA remained unchanged. Full evidence is in [`docs/PHASE-7-DESIGN.md`](docs/PHASE-7-DESIGN.md) and [`docs/PHASE-7-TEST-RECORD.md`](docs/PHASE-7-TEST-RECORD.md).
+
+**Phase 7 is complete. Phase 8 has not started.**
