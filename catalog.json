@@ -7,7 +7,10 @@
       "period": "phase-1",
       "category": "general",
       "url": "products/idea-mashup/",
-      "source": "products/idea-mashup/index.html"
+      "source": "products/idea-mashup/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "مرتب أسباب الاسترجاع",
@@ -15,7 +18,10 @@
       "period": "2026-w45",
       "category": "ecommerce",
       "url": "products/weekly/2026-w45/",
-      "source": "products/weekly/2026-w45/index.html"
+      "source": "products/weekly/2026-w45/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "محول أثر الخصم",
@@ -23,7 +29,10 @@
       "period": "2026-w44",
       "category": "ecommerce",
       "url": "products/weekly/2026-w44/",
-      "source": "products/weekly/2026-w44/index.html"
+      "source": "products/weekly/2026-w44/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "مدقق براهين الكتالوج",
@@ -31,7 +40,10 @@
       "period": "2026-w43",
       "category": "ecommerce",
       "url": "products/weekly/2026-w43/",
-      "source": "products/weekly/2026-w43/index.html"
+      "source": "products/weekly/2026-w43/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "مدقق ادعاءات العرض",
@@ -39,7 +51,10 @@
       "period": "2026-w42",
       "category": "ecommerce",
       "url": "products/weekly/2026-w42/",
-      "source": "products/weekly/2026-w42/index.html"
+      "source": "products/weekly/2026-w42/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "كاشف فجوات أسئلة المنتج",
@@ -47,7 +62,10 @@
       "period": "2026-w41",
       "category": "ecommerce",
       "url": "products/weekly/2026-w41/",
-      "source": "products/weekly/2026-w41/index.html"
+      "source": "products/weekly/2026-w41/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "مراجع توقعات الشحن",
@@ -55,7 +73,10 @@
       "period": "2026-w40",
       "category": "ecommerce",
       "url": "products/weekly/2026-w40/",
-      "source": "products/weekly/2026-w40/index.html"
+      "source": "products/weekly/2026-w40/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "مفسر سياسة الاسترجاع",
@@ -63,7 +84,10 @@
       "period": "2026-w39",
       "category": "ecommerce",
       "url": "products/weekly/2026-w39/",
-      "source": "products/weekly/2026-w39/index.html"
+      "source": "products/weekly/2026-w39/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "ناقد صفحة الدفع",
@@ -71,7 +95,10 @@
       "period": "2026-w38",
       "category": "ecommerce",
       "url": "products/weekly/2026-w38/",
-      "source": "products/weekly/2026-w38/index.html"
+      "source": "products/weekly/2026-w38/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "صانع موجز العرض",
@@ -79,7 +106,10 @@
       "period": "2026-w37",
       "category": "ecommerce",
       "url": "products/weekly/2026-w37/",
-      "source": "products/weekly/2026-w37/index.html"
+      "source": "products/weekly/2026-w37/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "بطاقات القرار",
@@ -87,7 +117,10 @@
       "period": "2026-w36",
       "category": "productivity",
       "url": "products/weekly/2026-w36/",
-      "source": "products/weekly/2026-w36/index.html"
+      "source": "products/weekly/2026-w36/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "شرارة منتج — مولّد تجربة من خمس دقائق لـ فرق التسويق الصغيرة",
@@ -95,7 +128,10 @@
       "period": "2026-w35",
       "category": "general",
       "url": "products/weekly/2026-w35/",
-      "source": "products/weekly/2026-w35/index.html"
+      "source": "products/weekly/2026-w35/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     },
     {
       "title": "شرارة منتج — النسخة الأسبوعية",
@@ -103,7 +139,10 @@
       "period": "2026-w34",
       "category": "factory",
       "url": "products/weekly/2026-w34/",
-      "source": "products/weekly/2026-w34/index.html"
+      "source": "products/weekly/2026-w34/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
     }
   ]
 }
