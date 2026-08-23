@@ -241,9 +241,10 @@
       "title": "موضح سياسة الشحن",
       "pitch": "أداة تساعد المتجر على تحويل سياسة الشحن المعقدة إلى نقاط واضحة قابلة للمراجعة.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w47"
     }
   ]
 }
