@@ -4,9 +4,9 @@ This repository is the foundation for a phone-operated, zero-budget factory that
 
 ## Current state
 
-> **Phase 6 — catalog and lightweight analytics: complete.**
+> **Phase 8 — hardening and scale: complete.**
 
-The repository is public, the weekly heartbeat is active, the manual LLM path has a real, verified Gemini → Groq failover chain, and the public Pages root now contains an automatically rebuilt Arabic catalog of every shipped product. Each published product and the catalog use a narrowly allow-listed, no-account CounterAPI page-view pixel injected only after the existing safety gates. No deployment to Manus was used or configured.
+The repository is public, phone-operable, and remains hosted only on GitHub Pages. The weekly Tier A path, the manually triggered LLM provider chain, the public Arabic idea intake, the catalog, and the lifecycle workflow are now protected by centralized artifact-safety rules, shared publish concurrency, stale-main refusal, verified action SHAs, and a confirmed-only retirement/revisit path. No deployment to Manus was used or configured.
 
 ## Phase gates
 
@@ -22,7 +22,7 @@ Each phase is a gate. The next phase must not begin until the current phase has 
 | 5 | LLM provider fallback chain | Complete — real Gemini-to-Groq failover proven |
 | 6 | Catalog and lightweight analytics | Complete — Tier A and LLM paths, public browser proof |
 | 7 | Public idea intake and feedback-informed prioritization | Complete — real issue triage and Telegram proof |
-| 8 | Hardening and scale | Not started |
+| 8 | Hardening and scale | Complete — security, lifecycle, concurrency, and failure proof |
 
 ## Operating constraints
 
@@ -102,4 +102,14 @@ The workflow [`Phase 7 — public idea intake triage`](.github/workflows/phase-7
 
 The real successful case was [Issue #1](https://github.com/lo77667/repositoryDz/issues/1) and [run 32610704529](https://github.com/lo77667/repositoryDz/actions/runs/32610704529): **مراجع وضوح عرض الشحن** received `ready-for-review` with `94/100`, a `template:text-tool` suggestion, and an `ecommerce` category. The negative cases were [run 32610788025](https://github.com/lo77667/repositoryDz/actions/runs/32610788025) for missing information, [run 32610788444](https://github.com/lo77667/repositoryDz/actions/runs/32610788444) for a duplicate, and [run 32610788924](https://github.com/lo77667/repositoryDz/actions/runs/32610788924) for unsafe content. All four workflows succeeded, Telegram steps completed, and the backlog SHA remained unchanged. Full evidence is in [`docs/PHASE-7-DESIGN.md`](docs/PHASE-7-DESIGN.md) and [`docs/PHASE-7-TEST-RECORD.md`](docs/PHASE-7-TEST-RECORD.md).
 
-**Phase 7 is complete. Phase 8 has not started.**
+## Phase 8 hardening and scale
+
+Phase 8 adds the shared [`automation/security_policy.py`](automation/security_policy.py) rules and regression tests used by the generated-HTML and Tier A validators. They reject network-capable browser APIs, dangerous markup, inline event handlers, redirects, external frames, data HTML URLs, and credential-like literals. The approved CounterAPI pixel remains the only external exception after the final instrumentation gate. The local regression suite and the existing products, catalog, and browser gates passed after the change.
+
+The lifecycle tool [`automation/manage_lifecycle.py`](automation/manage_lifecycle.py) supports only validated `retired`, `revisit`, and `backlog` transitions with a reason, optional internal replacement path, history, and atomic backlog writes. It never deletes a published artifact or overwrites its URL. The manual [`Phase 8 — product lifecycle management`](.github/workflows/phase-8-lifecycle.yml) workflow requires `confirm=true`, uses the shared publish lock, refuses stale `main`, rebuilds and verifies the catalog, waits for Pages, and notifies Telegram.
+
+The weekly and LLM publishing workflows now share `repositoryDz-publish-main`, reject a stale push after fetching `origin/main`, and no longer export the unnecessary provider model output. Active third-party actions are pinned to verified SHAs, and the repository Actions policy now reports `sha_pinning_required=true`. The non-blocking Node.js 20 deprecation annotation remains a GitHub runner maintenance note; it did not block any run.
+
+Real evidence includes [Tier A run 32611679734](https://github.com/lo77667/repositoryDz/actions/runs/32611679734) for `2026-w46`, [LLM run 32611883144](https://github.com/lo77667/repositoryDz/actions/runs/32611883144) for `2026-w47`, the intentionally rejected no-confirm lifecycle run [32612039113](https://github.com/lo77667/repositoryDz/actions/runs/32612039113), the confirmed retirement run [32612061452](https://github.com/lo77667/repositoryDz/actions/runs/32612061452), and the post-pinning guard [32612331756](https://github.com/lo77667/repositoryDz/actions/runs/32612331756). The public catalog and original retired product remained reachable, while the replacement path also loaded successfully. The full record is in [`docs/PHASE-8-TEST-RECORD.md`](docs/PHASE-8-TEST-RECORD.md).
+
+**Phase 8 is complete. Phase 9 has not started.**
