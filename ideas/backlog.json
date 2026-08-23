@@ -234,6 +234,16 @@
       "difficulty": 3,
       "category": "ecommerce",
       "built_period": "2026-w45"
+    },
+    {
+      "id": "generate-009",
+      "slug": "shipping-policy-clarifier",
+      "title": "موضح سياسة الشحن",
+      "pitch": "أداة تساعد المتجر على تحويل سياسة الشحن المعقدة إلى نقاط واضحة قابلة للمراجعة.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "ecommerce"
     }
   ]
 }
