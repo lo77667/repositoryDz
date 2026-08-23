@@ -195,9 +195,10 @@
       "title": "كاشف فجوات أسئلة المنتج",
       "pitch": "أداة تساعد المتجر على اكتشاف الأسئلة المهمة التي لا يجيب عنها وصف المنتج.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w41"
     }
   ]
 }
