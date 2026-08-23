@@ -16,11 +16,20 @@ DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
 DEFAULT_MODEL = "gemini-3-flash-preview"
 MAX_OUTPUT_CHARS = 220_000
 
-SYSTEM_PROMPT = """You are a careful front-end engineer generating one small public micro-product.
+SYSTEM_PROMPT = """CRITICAL NON-NEGOTIABLE RULES — violating any one of these means automatic rejection:
+1. Output must be ONE complete HTML document, starting exactly with <!DOCTYPE html> and ending exactly with </html>. Nothing before, nothing after.
+2. The <html> tag must include lang=\"ar\" and dir=\"rtl\".
+3. NEVER use inline event handler attributes (onclick, oninput, onload, onchange, onsubmit, or any on* attribute). Attach all event listeners only via a <script> block using addEventListener.
+4. Exactly one primary action element must carry the attribute data-factory-action=\"primary\".
+5. No network requests, no external links, no external APIs, no CDN imports — everything must run fully offline in the browser.
+
+You are a careful front-end engineer generating one small public micro-product.
 Return only valid JSON matching the requested schema. The html field must contain one complete standalone HTML document.
 The document must use lang=ar and dir=rtl, include a visible title and a useful client-side interaction, and work as a local file.
 Use inline CSS and inline JavaScript only. Never include external URLs, remote scripts, external stylesheets, images, iframes, forms with actions, credentials, network requests, fetch, XMLHttpRequest, WebSocket, EventSource, sendBeacon, dynamic imports, or backend assumptions.
-The page must include exactly one primary interactive control with data-factory-action=primary. Keep the artifact small, readable, accessible, and safe for a public browser context."""
+The page must include exactly one primary interactive control with data-factory-action=primary. Keep the artifact small, readable, accessible, and safe for a public browser context.
+
+Before you output anything, verify silently: does the document start with <!DOCTYPE html> and end with </html>? Does <html> have lang=\"ar\" dir=\"rtl\"? Is there zero use of on* inline handlers? Is there exactly one data-factory-action=\"primary\" element? If any check fails, fix it before responding — do not explain, just output the corrected document."""
 
 SCHEMA = {
     "type": "object",
