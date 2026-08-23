@@ -6,7 +6,10 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+from html import unescape
 from html.parser import HTMLParser
+
+from analytics_policy import is_allowed_analytics_url
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +24,7 @@ class ArtifactParser(HTMLParser):
         self._script_buffer: list[str] = []
         self.html_attrs: dict[str, str] = {}
         self.external_dependency = False
+        self.analytics_urls: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attr_map = {key: value or "" for key, value in attrs}
@@ -28,6 +32,8 @@ class ArtifactParser(HTMLParser):
             self.html_attrs = attr_map
         if "id" in attr_map:
             self.ids.add(attr_map["id"])
+        if tag == "img" and attr_map.get("data-factory-analytics") == "counterapi" and attr_map.get("src"):
+            self.analytics_urls.append(attr_map["src"])
         if (tag == "script" and "src" in attr_map) or (tag == "link" and "href" in attr_map):
             self.external_dependency = True
         if tag == "script":
@@ -57,8 +63,9 @@ def strategy_requirements(strategy: str) -> tuple[str, ...]:
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: validate_weekly_product.py products/weekly/YYYY-wNN/index.html")
+    if len(sys.argv) not in {2, 3} or (len(sys.argv) == 3 and sys.argv[2] != "--allow-analytics"):
+        raise SystemExit("usage: validate_weekly_product.py products/weekly/YYYY-wNN/index.html [--allow-analytics]")
+    allow_analytics = len(sys.argv) == 3
 
     relative = Path(sys.argv[1])
     path = ROOT / relative
@@ -96,8 +103,15 @@ def main() -> None:
         errors.append("HTML language or direction is incorrect")
     if parser.external_dependency:
         errors.append("External script or stylesheet dependency found")
-    if re.search(r"https?://", html, re.I):
-        errors.append("External URL found in weekly artifact")
+    for raw_url in re.findall(r"https?://[^\s\"'<>]+", unescape(html), re.I):
+        url = raw_url.rstrip(".,)")
+        if not (allow_analytics and url in parser.analytics_urls and is_allowed_analytics_url(url)):
+            errors.append("External URL found in weekly artifact")
+            break
+    if any(not is_allowed_analytics_url(url) for url in parser.analytics_urls):
+        errors.append("Analytics URL is not on the approved CounterAPI allowlist")
+    if parser.analytics_urls and not allow_analytics:
+        errors.append("Analytics instrumentation is not allowed before the final gate")
     if any(token in html for token in ("fetch(", "XMLHttpRequest", "WebSocket")):
         errors.append("Network-capable browser API found")
     js_path = ROOT / ".phase2_weekly_inline.js"

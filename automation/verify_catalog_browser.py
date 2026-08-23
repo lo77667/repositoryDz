@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run the generated HTML in an isolated headless Chromium browser."""
+"""Verify the static catalog in isolated Chromium."""
 
 from __future__ import annotations
 
@@ -13,54 +13,58 @@ from playwright.sync_api import sync_playwright
 
 
 def main() -> None:
-    if len(sys.argv) not in {2, 3} or (len(sys.argv) == 3 and sys.argv[2] != "--allow-analytics"):
-        raise SystemExit("usage: verify_generated_browser.py path/to/index.html [--allow-analytics]")
-    allow_analytics = len(sys.argv) == 3
+    if len(sys.argv) != 2:
+        raise SystemExit("usage: verify_catalog_browser.py index.html")
     path = Path(sys.argv[1]).resolve()
     if not path.exists():
-        raise SystemExit(f"Candidate does not exist: {path}")
-
+        raise SystemExit(f"Catalog does not exist: {path}")
     console_errors: list[str] = []
     page_errors: list[str] = []
-    requests: list[str] = []
+    network_requests: list[str] = []
     analytics_requests: list[str] = []
-    result: dict[str, object] = {"path": str(path), "console_errors": console_errors, "page_errors": page_errors, "network_requests": requests, "analytics_requests": analytics_requests}
-
+    result: dict[str, object] = {
+        "path": str(path),
+        "console_errors": console_errors,
+        "page_errors": page_errors,
+        "network_requests": network_requests,
+        "analytics_requests": analytics_requests,
+    }
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(executable_path="/usr/bin/chromium", headless=True, args=["--no-sandbox", "--disable-gpu"])
         page = browser.new_page()
         page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
         page.on("pageerror", lambda exception: page_errors.append(str(exception)))
+
         def record_request(event):
             if event.resource_type == "document":
                 return
-            if allow_analytics and is_allowed_analytics_url(event.url):
+            if is_allowed_analytics_url(event.url):
                 analytics_requests.append(event.url)
             else:
-                requests.append(event.url)
+                network_requests.append(event.url)
 
         page.on("request", record_request)
         try:
             page.goto(path.as_uri(), wait_until="load", timeout=15_000)
-            page.wait_for_timeout(250)
-            primary = page.locator('[data-factory-action="primary"]')
-            count = primary.count()
-            result["primary_controls"] = count
-            if count != 1:
-                raise AssertionError(f"expected exactly one primary control, found {count}")
-            if not primary.is_visible():
-                raise AssertionError("primary control is not visible")
-            primary.click(timeout=5_000)
-            page.wait_for_timeout(250)
-            result["clicked"] = True
+            page.wait_for_timeout(500)
+            cards = page.locator("article.card")
+            links = page.locator("a.open")
+            result["cards"] = cards.count()
+            result["links"] = links.count()
             result["title"] = page.title()
+            if cards.count() < 1 or links.count() != cards.count():
+                raise AssertionError("catalog cards and links are not aligned")
+            if not page.locator("h1").is_visible():
+                raise AssertionError("catalog heading is not visible")
+            links.first.click(timeout=5_000)
+            page.wait_for_timeout(250)
+            result["clicked_first_product"] = True
         except (PlaywrightTimeoutError, AssertionError) as exc:
             result["failure"] = str(exc)
         finally:
             browser.close()
-
     print(json.dumps(result, ensure_ascii=False))
-    if console_errors or page_errors or requests or result.get("failure"):
+    if console_errors or page_errors or network_requests or result.get("failure"):
         raise SystemExit(1)
 
 

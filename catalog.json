@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "products": [
+    {
+      "title": "شرارة منتج — مولّد أفكار رقمية",
+      "pitch": "شرارة منتج: مولّد أفكار أولية لمنتجات رقمية صغيرة.",
+      "period": "phase-1",
+      "category": "general",
+      "url": "products/idea-mashup/",
+      "source": "products/idea-mashup/index.html"
+    },
+    {
+      "title": "مدقق براهين الكتالوج",
+      "pitch": "أداة تساعد المتجر على مراجعة ما إذا كانت مزايا المنتج مدعومة بمعلومات واضحة.",
+      "period": "2026-w43",
+      "category": "ecommerce",
+      "url": "products/weekly/2026-w43/",
+      "source": "products/weekly/2026-w43/index.html"
+    },
+    {
+      "title": "مدقق ادعاءات العرض",
+      "pitch": "أداة تساعد المتجر على فحص وضوح ادعاءات العرض قبل نشرها للعملاء.",
+      "period": "2026-w42",
+      "category": "ecommerce",
+      "url": "products/weekly/2026-w42/",
+      "source": "products/weekly/2026-w42/index.html"
+    },
+    {
+      "title": "كاشف فجوات أسئلة المنتج",
+      "pitch": "أداة تساعد المتجر على اكتشاف الأسئلة المهمة التي لا يجيب عنها وصف المنتج.",
+      "period": "2026-w41",
+      "category": "ecommerce",
+      "url": "products/weekly/2026-w41/",
+      "source": "products/weekly/2026-w41/index.html"
+    },
+    {
+      "title": "مراجع توقعات الشحن",
+      "pitch": "أداة تساعد المتجر على كشف الوعود الغامضة في صفحة الشحن قبل نشرها.",
+      "period": "2026-w40",
+      "category": "ecommerce",
+      "url": "products/weekly/2026-w40/",
+      "source": "products/weekly/2026-w40/index.html"
+    },
+    {
+      "title": "مفسر سياسة الاسترجاع",
+      "pitch": "أداة صغيرة تحول سياسة الاسترجاع الطويلة إلى شرح واضح قبل الشراء.",
+      "period": "2026-w39",
+      "category": "ecommerce",
+      "url": "products/weekly/2026-w39/",
+      "source": "products/weekly/2026-w39/index.html"
+    },
+    {
+      "title": "ناقد صفحة الدفع",
+      "pitch": "أداة صغيرة تساعد صاحب المتجر على مراجعة وضوح صفحة الدفع قبل إطلاقها.",
+      "period": "2026-w38",
+      "category": "ecommerce",
+      "url": "products/weekly/2026-w38/",
+      "source": "products/weekly/2026-w38/index.html"
+    },
+    {
+      "title": "صانع موجز العرض",
+      "pitch": "مساحة مركزة لتحويل فكرة عرض مبهمة إلى موجز قابل للمشاركة.",
+      "period": "2026-w37",
+      "category": "ecommerce",
+      "url": "products/weekly/2026-w37/",
+      "source": "products/weekly/2026-w37/index.html"
+    },
+    {
+      "title": "بطاقات القرار",
+      "pitch": "بطاقات بصرية عشوائية تكسر تردد اختيار الخطوة التالية.",
+      "period": "2026-w36",
+      "category": "productivity",
+      "url": "products/weekly/2026-w36/",
+      "source": "products/weekly/2026-w36/index.html"
+    },
+    {
+      "title": "شرارة منتج — مولّد تجربة من خمس دقائق لـ فرق التسويق الصغيرة",
+      "pitch": "نسخة 2026-w35 من مولّد شرارة منتج.",
+      "period": "2026-w35",
+      "category": "general",
+      "url": "products/weekly/2026-w35/",
+      "source": "products/weekly/2026-w35/index.html"
+    },
+    {
+      "title": "شرارة منتج — النسخة الأسبوعية",
+      "pitch": "أول نسخة أنتجها النبض الأسبوعي الحتمي.",
+      "period": "2026-w34",
+      "category": "factory",
+      "url": "products/weekly/2026-w34/",
+      "source": "products/weekly/2026-w34/index.html"
+    }
+  ]
+}

@@ -6,8 +6,11 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
+
+from analytics_policy import is_allowed_analytics_url
 
 MAX_BYTES = 220_000
 BLOCKED_TOKENS = (
@@ -41,6 +44,7 @@ class SafetyParser(HTMLParser):
         self.has_body = False
         self.script_contents: list[str] = []
         self.external_dependency = False
+        self.analytics_urls: list[str] = []
         self.bad_form = False
         self._in_script = False
         self._script_buffer: list[str] = []
@@ -57,6 +61,8 @@ class SafetyParser(HTMLParser):
             self.ids.add(values["id"])
         if values.get("data-factory-action") == "primary":
             self.primary_actions += 1
+        if tag == "img" and values.get("data-factory-analytics") == "counterapi" and values.get("src"):
+            self.analytics_urls.append(values["src"])
         if (tag == "script" and "src" in values) or (tag == "link" and "href" in values):
             self.external_dependency = True
         if tag == "form" and values.get("action"):
@@ -76,7 +82,7 @@ class SafetyParser(HTMLParser):
             self._script_buffer.append(data)
 
 
-def validate(path: Path) -> list[str]:
+def validate(path: Path, allow_analytics: bool = False) -> list[str]:
     errors: list[str] = []
     if not path.exists():
         return [f"Generated artifact does not exist: {path}"]
@@ -109,8 +115,15 @@ def validate(path: Path) -> list[str]:
     for token in BLOCKED_TOKENS:
         if token.lower() in lowered:
             errors.append(f"Blocked capability found: {token}")
-    if re.search(r"https?://", html, re.I):
-        errors.append("External URL found")
+    for raw_url in re.findall(r"https?://[^\s\"'<>]+", unescape(html), re.I):
+        url = raw_url.rstrip(".,)")
+        if not (allow_analytics and url in parser.analytics_urls and is_allowed_analytics_url(url)):
+            errors.append("External URL found")
+            break
+    if any(not is_allowed_analytics_url(url) for url in parser.analytics_urls):
+        errors.append("Analytics URL is not on the approved CounterAPI allowlist")
+    if parser.analytics_urls and not allow_analytics:
+        errors.append("Analytics instrumentation is not allowed before the final gate")
     for pattern in SECRET_PATTERNS:
         if re.search(pattern, html):
             errors.append("Credential-like literal found")
@@ -133,9 +146,9 @@ def validate(path: Path) -> list[str]:
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: validate_generated_html.py path/to/index.html")
-    errors = validate(Path(sys.argv[1]))
+    if len(sys.argv) not in {2, 3} or (len(sys.argv) == 3 and sys.argv[2] != "--allow-analytics"):
+        raise SystemExit("usage: validate_generated_html.py path/to/index.html [--allow-analytics]")
+    errors = validate(Path(sys.argv[1]), allow_analytics=len(sys.argv) == 3)
     if errors:
         for error in errors:
             print("ERROR:", error)

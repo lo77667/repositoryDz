@@ -70,9 +70,28 @@ jobs:
             --period "${WEEKLY_PERIOD}" \
             --idea-json "${SELECTED_IDEA}"
 
-      - name: Validate the generated artifact
+      - name: Validate the generated artifact before analytics
         shell: bash
         run: python3 automation/validate_weekly_product.py "${{ steps.build.outputs.path }}"
+
+      - name: Add the trusted page-view pixel
+        shell: bash
+        run: python3 automation/instrument_analytics.py "${{ steps.build.outputs.path }}"
+
+      - name: Validate the final weekly artifact
+        shell: bash
+        run: python3 automation/validate_weekly_product.py "${{ steps.build.outputs.path }}" --allow-analytics
+
+      - name: Build and validate the public storefront catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 automation/build_catalog.py
+          python3 automation/instrument_analytics.py index.html
+          python3 automation/validate_catalog.py index.html
+          python3 -m pip install --disable-pip-version-check --no-input --quiet playwright
+          python3 -m playwright install --with-deps chromium
+          python3 automation/verify_catalog_browser.py index.html
 
       - name: Commit and push the new weekly artifact and backlog state
         shell: bash
@@ -80,7 +99,7 @@ jobs:
           set -euo pipefail
           git config user.name "repositoryDz weekly factory"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ideas/backlog.json "${{ steps.build.outputs.path }}"
+          git add ideas/backlog.json index.html catalog.json "${{ steps.build.outputs.path }}"
           if git diff --cached --quiet; then
             echo "No backlog or artifact changes detected."
           else
@@ -92,17 +111,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          url='${{ steps.build.outputs.url }}'
-          for attempt in $(seq 1 18); do
-            if curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "$url"; then
-              echo "Published URL is reachable: $url"
-              exit 0
+          for url in \
+            '${{ steps.build.outputs.url }}' \
+            'https://lo77667.github.io/repositoryDz/'; do
+            for attempt in $(seq 1 18); do
+              if curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "$url"; then
+                echo "Published URL is reachable: $url"
+                break
+              fi
+              echo "Pages is still building (attempt $attempt/18): $url"
+              sleep 10
+            done
+            if ! curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "$url"; then
+              echo "::error::The Pages URL did not become reachable in time: $url"
+              exit 1
             fi
-            echo "Pages is still building (attempt $attempt/18)."
-            sleep 10
           done
-          echo "::error::The weekly Pages URL did not become reachable in time: $url"
-          exit 1
 
       - name: Send successful weekly notification
         if: ${{ success() }}
@@ -112,6 +136,7 @@ jobs:
           PRODUCT_PERIOD: ${{ steps.build.outputs.period }}
           PRODUCT_TITLE: ${{ steps.build.outputs.title }}
           PRODUCT_URL: ${{ steps.build.outputs.url }}
+          CATALOG_URL: https://lo77667.github.io/repositoryDz/
         shell: bash
         run: |
           set -euo pipefail
@@ -119,7 +144,7 @@ jobs:
             echo "::error::Telegram secrets are required for the weekly success notification."
             exit 1
           fi
-          message="نجح تشغيل المصنع الأسبوعي — ${PRODUCT_PERIOD}\n${PRODUCT_TITLE}\n${PRODUCT_URL}"
+          message="نجح تشغيل المصنع الأسبوعي — ${PRODUCT_PERIOD}\n${PRODUCT_TITLE}\n${PRODUCT_URL}\nالكتالوج: ${CATALOG_URL}"
           response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
             --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \

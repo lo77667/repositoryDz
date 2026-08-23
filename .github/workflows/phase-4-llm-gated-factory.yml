@@ -1,4 +1,4 @@
-name: Phase 5 — LLM provider fallback chain
+name: Phase 6 — catalog and analytics with LLM provider fallback
 
 on:
   workflow_dispatch:
@@ -123,6 +123,13 @@ jobs:
 
           python3 automation/validate_generated_html.py "${CANDIDATE_PATH}"
           python3 automation/verify_generated_browser.py "${CANDIDATE_PATH}"
+          python3 automation/instrument_analytics.py "${CANDIDATE_PATH}"
+          python3 automation/validate_generated_html.py "${CANDIDATE_PATH}" --allow-analytics
+          python3 automation/verify_generated_browser.py "${CANDIDATE_PATH}" --allow-analytics
+          python3 automation/build_catalog.py
+          python3 automation/instrument_analytics.py index.html
+          python3 automation/validate_catalog.py index.html
+          python3 automation/verify_catalog_browser.py index.html
           url="https://lo77667.github.io/repositoryDz/products/weekly/${WEEKLY_PERIOD}/"
           {
             echo "period=${WEEKLY_PERIOD}"
@@ -141,7 +148,7 @@ jobs:
           set -euo pipefail
           git config user.name "repositoryDz LLM provider chain"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ideas/backlog.json "${{ steps.build.outputs.path }}"
+          git add ideas/backlog.json index.html catalog.json "${{ steps.build.outputs.path }}"
           git commit -m "chore: publish idea ${{ steps.build.outputs.idea_id }} via ${{ steps.build.outputs.provider }}"
           git push origin HEAD:main
 
@@ -149,17 +156,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          url='${{ steps.build.outputs.url }}'
-          for attempt in $(seq 1 24); do
-            if curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "$url"; then
-              echo "Published URL is reachable: $url"
-              exit 0
+          for url in \
+            '${{ steps.build.outputs.url }}' \
+            'https://lo77667.github.io/repositoryDz/'; do
+            for attempt in $(seq 1 24); do
+              if curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "$url"; then
+                echo "Published URL is reachable: $url"
+                break
+              fi
+              echo "Pages is still building (attempt $attempt/24): $url"
+              sleep 10
+            done
+            if ! curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --output /dev/null "$url"; then
+              echo "::error::The Pages URL did not become reachable in time: $url"
+              exit 1
             fi
-            echo "Pages is still building (attempt $attempt/24)."
-            sleep 10
           done
-          echo "::error::The LLM product URL did not become reachable in time: $url"
-          exit 1
 
       - name: Send successful provider-chain notification
         if: ${{ success() }}
@@ -169,6 +181,7 @@ jobs:
           PRODUCT_PERIOD: ${{ steps.build.outputs.period }}
           PRODUCT_TITLE: ${{ steps.pick.outputs.idea_title }}
           PRODUCT_URL: ${{ steps.build.outputs.url }}
+          CATALOG_URL: https://lo77667.github.io/repositoryDz/
           PRODUCT_MODE: ${{ steps.build.outputs.mode }}
           PRODUCT_PROVIDER: ${{ steps.build.outputs.provider }}
         shell: bash
@@ -178,7 +191,7 @@ jobs:
             echo "::error::Telegram secrets are required for the provider-chain success notification."
             exit 1
           fi
-          message="نجحت المرحلة 5 — ${PRODUCT_PERIOD}\nالفكرة: ${PRODUCT_TITLE}\nالمزود: ${PRODUCT_PROVIDER}\nالنمط: ${PRODUCT_MODE}\n${PRODUCT_URL}"
+          message="نجح تشغيل المرحلة 6 — ${PRODUCT_PERIOD}\nالفكرة: ${PRODUCT_TITLE}\nالمزود: ${PRODUCT_PROVIDER}\nالنمط: ${PRODUCT_MODE}\nالمنتج: ${PRODUCT_URL}\nالكتالوج: ${CATALOG_URL}"
           response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
             --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
