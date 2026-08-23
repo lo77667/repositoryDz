@@ -184,9 +184,10 @@
       "title": "مراجع توقعات الشحن",
       "pitch": "أداة تساعد المتجر على كشف الوعود الغامضة في صفحة الشحن قبل نشرها.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w40"
     }
   ]
 }
