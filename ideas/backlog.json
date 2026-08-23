@@ -286,10 +286,11 @@
       "title": "مقارن طلبات الخدمة",
       "pitch": "أداة تساعد مقدم الخدمة على مقارنة طلبات العملاء وترتيبها حسب الملاءمة والجهد.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
       "category": "services",
-      "shape": "comparator"
+      "shape": "comparator",
+      "built_period": "2026-w48"
     },
     {
       "id": "generate-011",

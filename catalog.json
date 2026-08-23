@@ -14,6 +14,18 @@
       "replacement_url": ""
     },
     {
+      "title": "مقارن طلبات الخدمة",
+      "pitch": "أداة تساعد مقدم الخدمة على مقارنة طلبات العملاء وترتيبها حسب الملاءمة والجهد.",
+      "period": "2026-w48",
+      "category": "services",
+      "shape": "comparator",
+      "url": "products/weekly/2026-w48/",
+      "source": "products/weekly/2026-w48/index.html",
+      "lifecycle_status": "built",
+      "lifecycle_reason": "",
+      "replacement_url": ""
+    },
+    {
       "title": "موضح سياسة الشحن",
       "pitch": "أداة تساعد المتجر على تحويل سياسة الشحن المعقدة إلى نقاط واضحة قابلة للمراجعة.",
       "period": "2026-w47",
