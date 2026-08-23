@@ -206,9 +206,10 @@
       "title": "مدقق ادعاءات العرض",
       "pitch": "أداة تساعد المتجر على فحص وضوح ادعاءات العرض قبل نشرها للعملاء.",
       "strategy": "generate",
-      "status": "backlog",
+      "status": "built",
       "difficulty": 3,
-      "category": "ecommerce"
+      "category": "ecommerce",
+      "built_period": "2026-w42"
     }
   ]
 }
