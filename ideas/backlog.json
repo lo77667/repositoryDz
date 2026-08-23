@@ -222,6 +222,16 @@
       "difficulty": 3,
       "category": "ecommerce",
       "built_period": "2026-w43"
+    },
+    {
+      "id": "generate-008",
+      "slug": "return-reason-sorter",
+      "title": "مرتب أسباب الاسترجاع",
+      "pitch": "أداة تساعد المتجر على تنظيم أسباب الاسترجاع واكتشاف الأنماط المتكررة في الملاحظات.",
+      "strategy": "generate",
+      "status": "backlog",
+      "difficulty": 3,
+      "category": "ecommerce"
     }
   ]
 }
