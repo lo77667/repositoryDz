@@ -30,8 +30,10 @@
 | no-op بلا فترة صريحة | [32767321437][2] | نجح؛ اكتشف `2026-w35` المنشورة، أنهى المسار قبل picker، وأرسل إشعار `already-published` إلى Telegram |
 | إعادة استخدام يدوي | [32767380959][3] | فشل مقصود؛ رفض `2026-w35` قبل picker، ولم يُنشئ artifact أو commit، وأرسل إشعار الفشل |
 | الحالة الأصلية قبل الإصلاح | [32719459833][1] | فشل غير مرغوب سابقًا؛ وصل إلى build ثم اصطدم بحماية overwrite |
+| مسار LLM بلا فترة صريحة | [32774375830][4] | نجح no-op؛ تخطى تثبيت المتصفح وpicker والمزودين والبناء والنشر، وأكمل إشعار `already-published` |
+| إعادة استخدام يدوي عبر مسار LLM | [32774533800][5] | فشل مقصود؛ فشل guard، تخطى picker والمزودين والنشر، وأكمل إشعار الفشل |
 
-حالة `main` بعد الاختبارات بقيت نظيفة على commit `a4c0556` قبل توثيق هذا السجل، ولم يتغير `ideas/backlog.json` بسبب أي من اختبارَي الحارس. GitHub Pages بقيت `built`.
+حالة `main` بعد اختبارات الحارس الأصلية بقيت نظيفة على commit `a4c0556` قبل توثيق السجل الأول، ولم يتغير `ideas/backlog.json` بسبب أي من اختبارَي الحارس. GitHub Pages بقيت `built`. وبعد إضافة حارس مسار LLM في commit `5ccfd48` واختباريه الحقيقيين، بقيت بصمات `ideas/backlog.json` و`catalog.json` وartifact `2026-w35` ثابتة، وبقي remote `main` على commit `ccd17a8` بعد التصحيح الصغير الأخير.
 
 ## القرار التشغيلي
 
@@ -42,3 +44,5 @@
 [1]: https://github.com/lo77667/repositoryDz/actions/runs/32719459833 "Original failed weekly run"
 [2]: https://github.com/lo77667/repositoryDz/actions/runs/32767321437 "Real already-published no-op test"
 [3]: https://github.com/lo77667/repositoryDz/actions/runs/32767380959 "Real manual period reuse rejection test"
+[4]: https://github.com/lo77667/repositoryDz/actions/runs/32774375830 "Real LLM already-published no-op test"
+[5]: https://github.com/lo77667/repositoryDz/actions/runs/32774533800 "Real LLM manual period reuse rejection test"
