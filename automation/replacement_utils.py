@@ -22,5 +22,8 @@ def normalize_replacement_url(value: str | None) -> str | None:
         return f"products/weekly/{period}/"
     product = PRODUCT_RE.fullmatch(candidate)
     if product:
-        return f"products/{product.group('slug').lower()}/"
+        slug = product.group("slug").lower()
+        if slug == "weekly":
+            raise ValueError("replacement URL must point to a product, not the weekly root")
+        return f"products/{slug}/"
     raise ValueError("replacement URL must be an internal products/... path")

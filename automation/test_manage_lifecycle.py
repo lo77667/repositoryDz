@@ -59,6 +59,13 @@ def main() -> None:
             raise AssertionError(f"invalid ISO period must be rejected: {invalid_period}")
 
     try:
+        transition(copy.deepcopy(original), "built-1", "retired", "سبب صالح وطويل", "products/weekly/")
+    except ValueError as exc:
+        assert "weekly root" in str(exc)
+    else:
+        raise AssertionError("weekly root must not be accepted as a product replacement")
+
+    try:
         transition(copy.deepcopy(original), "built-1", "retired", "سبب صالح", "https://example.com")
     except ValueError as exc:
         assert "internal products" in str(exc)
