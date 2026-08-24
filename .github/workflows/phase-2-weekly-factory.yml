@@ -121,7 +121,7 @@ jobs:
           python3 automation/build_catalog.py
           python3 automation/instrument_analytics.py index.html
           python3 automation/validate_catalog.py index.html
-          python3 -m pip install --disable-pip-version-check --no-input --quiet playwright
+          python3 -m pip install --disable-pip-version-check --no-input --quiet --requirement automation/browser-requirements.txt
           python3 -m playwright install --with-deps chromium
           python3 automation/verify_catalog_browser.py index.html
 

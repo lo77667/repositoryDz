@@ -20,7 +20,7 @@ def main() -> None:
             "source": "products/weekly/2026-w01/index.html",
             "lifecycle_status": "retired",
             "lifecycle_reason": "تم استبداله بنسخة أدق",
-            "replacement_url": "products/weekly/2026-w99/",
+            "replacement_url": "products/weekly/2026-w50/",
         },
         {
             "title": "منتج قيد التقييم",
@@ -37,7 +37,7 @@ def main() -> None:
     html = render_catalog(products)
     assert 'data-lifecycle="retired"' in html
     assert 'متقاعد' in html and 'قيد المراجعة' in html
-    assert 'products/weekly/2026-w99/' in html
+    assert 'products/weekly/2026-w50/' in html
     assert 'evil.example' not in html
     assert html.count('class="open"') == 2
     print("catalog lifecycle tests passed")

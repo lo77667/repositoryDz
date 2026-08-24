@@ -55,15 +55,30 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install the isolated browser verifier
+      - name: Guard weekly period before picking an idea
+        id: period_guard
+        env:
+          WEEKLY_PERIOD: ${{ inputs.period }}
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m pip install --disable-pip-version-check --no-input --quiet playwright
+          if [[ -n "${WEEKLY_PERIOD:-}" ]]; then
+            python3 automation/guard_weekly_period.py --period "${WEEKLY_PERIOD}"
+          else
+            python3 automation/guard_weekly_period.py
+          fi
+
+      - name: Install the isolated browser verifier
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --no-input --quiet --requirement automation/browser-requirements.txt
           python3 -m playwright install --with-deps chromium
 
       - name: Pick one generate idea
         id: pick
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         env:
           WEEKLY_PERIOD: ${{ inputs.period }}
         shell: bash
@@ -77,6 +92,7 @@ jobs:
 
       - name: Try providers with bounded repairs and shared gates
         id: build
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_FALLBACK_API_KEY: ${{ secrets.LLM_FALLBACK_API_KEY }}
@@ -140,6 +156,7 @@ jobs:
           } >> "${GITHUB_OUTPUT}"
 
       - name: Commit and push the accepted artifact and backlog state
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -156,6 +173,7 @@ jobs:
           git push origin HEAD:main
 
       - name: Wait for the published Pages path
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -177,7 +195,7 @@ jobs:
           done
 
       - name: Send successful provider-chain notification
-        if: ${{ success() }}
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' && success() }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -195,6 +213,27 @@ jobs:
             exit 1
           fi
           message="نجح تشغيل مسار LLM المحكوم — ${PRODUCT_PERIOD}\nالفكرة: ${PRODUCT_TITLE}\nالمزود: ${PRODUCT_PROVIDER}\nالنمط: ${PRODUCT_MODE}\nالمنتج: ${PRODUCT_URL}\nالكتالوج: ${CATALOG_URL}"
+          response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+          grep -q '"ok":true' <<<"${response}"
+
+      - name: Send already-published notification
+        if: ${{ steps.period_guard.outputs.decision == 'already_published' && success() }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PRODUCT_PERIOD: ${{ steps.period_guard.outputs.period }}
+          PRODUCT_URL: ${{ steps.period_guard.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "::error::Telegram secrets are required for the already-published notification."
+            exit 1
+          fi
+          message="مسار LLM لم ينشر شيئًا — الفترة ${PRODUCT_PERIOD} منشورة مسبقًا. لا تغيير على backlog أو catalog أو artifact.\nالمنتج: ${PRODUCT_URL}\nالكتالوج: https://lo77667.github.io/repositoryDz/"
           response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
             --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \

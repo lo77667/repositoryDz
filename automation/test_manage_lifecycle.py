@@ -21,10 +21,10 @@ def data():
 def main() -> None:
     original = data()
     dry = copy.deepcopy(original)
-    result = transition(dry, "built-1", "retired", "منتج قديم وله بديل أفضل", "products/weekly/2026-w99/")
+    result = transition(dry, "built-1", "retired", "منتج قديم وله بديل أفضل", "products/weekly/2026-w50/")
     assert result["to"] == "retired"
     assert dry["ideas"][0]["status"] == "retired"
-    assert dry["ideas"][0]["replacement_url"] == "products/weekly/2026-w99/"
+    assert dry["ideas"][0]["replacement_url"] == "products/weekly/2026-w50/"
     assert dry["ideas"][0]["lifecycle_events"][-1]["from"] == "built"
 
     revisited = copy.deepcopy(dry)
@@ -44,6 +44,19 @@ def main() -> None:
         assert "at least 8" in str(exc)
     else:
         raise AssertionError("short reason must be rejected")
+
+    normalized = copy.deepcopy(original)
+    normalized_result = transition(normalized, "built-1", "retired", "منتج قديم وله بديل أفضل", "products/weekly/2026-w50/index.html")
+    assert normalized_result["replacement_url"] == "products/weekly/2026-w50/"
+    assert normalized["ideas"][0]["replacement_url"] == "products/weekly/2026-w50/"
+
+    for invalid_period in ("2026-w00", "2026-w54", "2026-w99"):
+        try:
+            transition(copy.deepcopy(original), "built-1", "retired", "سبب صالح وطويل", f"products/weekly/{invalid_period}/")
+        except ValueError as exc:
+            assert "ISO week" in str(exc)
+        else:
+            raise AssertionError(f"invalid ISO period must be rejected: {invalid_period}")
 
     try:
         transition(copy.deepcopy(original), "built-1", "retired", "سبب صالح", "https://example.com")

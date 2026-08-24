@@ -11,6 +11,7 @@ from pathlib import Path
 
 from generate_and_verify import verify
 from generate_html_with_llm import DEFAULT_BASE_URL, DEFAULT_MODEL, build_prompt, request_candidate
+from period_utils import require_period
 
 MAX_REPAIRS = 2
 
@@ -46,10 +47,17 @@ def main() -> None:
     parser.add_argument("--max-repairs", type=int, default=MAX_REPAIRS)
     args = parser.parse_args()
 
+    try:
+        period = require_period(args.period)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     idea = json.loads(args.idea_json)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    prompt = build_prompt(idea, args.period)
+    if output.exists():
+        raise RuntimeError(f"Refusing to overwrite an existing artifact: {output}")
+    candidate_path = output.with_name(f".{output.stem}.provider-candidate.html")
+    prompt = build_prompt(idea, period)
     history: list[dict[str, object]] = []
     provider_attempted = False
 
@@ -69,13 +77,20 @@ def main() -> None:
                 candidate = request_candidate(
                     provider["key"], provider["base_url"], provider["model"], prompt, repair_context, provider["name"]
                 )
-                output.write_text(candidate + "\n", encoding="utf-8")
-                failures = verify(output)
+                candidate_path.write_text(candidate + "\n", encoding="utf-8")
+                failures = verify(candidate_path)
             except Exception as exc:  # Provider failures move immediately to the next configured provider.
                 provider_history.append({"attempt": attempt, "failures": [str(exc)], "provider_error": True})
                 break
             provider_history.append({"attempt": attempt, "failures": failures})
             if not failures:
+                if output.exists():
+                    raise RuntimeError(f"Refusing to overwrite an artifact created during this run: {output}")
+                output.write_text(candidate + "\n", encoding="utf-8")
+                try:
+                    candidate_path.unlink()
+                except FileNotFoundError:
+                    pass
                 result = {
                     "status": "accepted",
                     "provider": provider["name"],
@@ -97,6 +112,10 @@ def main() -> None:
             repair_context = "\n".join(f"- {failure}" for failure in failures[:20])
         history.append({"provider": provider["name"], "status": "rejected", "attempts": len(provider_history), "checks": provider_history})
 
+    try:
+        candidate_path.unlink()
+    except FileNotFoundError:
+        pass
     result = {
         "status": "rejected",
         "provider": None,

@@ -11,6 +11,7 @@ from html.parser import HTMLParser
 
 from analytics_policy import is_allowed_analytics_url
 from security_policy import blocked_capabilities, dangerous_markup, has_credential_like_literal
+from period_utils import require_period
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -76,10 +77,18 @@ def main() -> None:
         print("\n".join(errors))
         raise SystemExit(1)
 
-    if not re.fullmatch(r"products/weekly/\d{4}-w\d{2}/index\.html", relative.as_posix()):
+    period_match = re.fullmatch(r"products/weekly/(\d{4}-w\d{2})/index\.html", relative.as_posix())
+    if not period_match:
         errors.append("Artifact path is not a weekly YYYY-wNN product path")
+    else:
+        try:
+            require_period(period_match.group(1))
+        except ValueError as exc:
+            errors.append(str(exc))
 
     html = path.read_text(encoding="utf-8")
+    if not re.fullmatch(r"<!doctype html>[\s\S]*</html>\s*", html, re.I):
+        errors.append("Document must be one complete HTML document from doctype through closing html tag")
     parser = ArtifactParser()
     try:
         parser.feed(html)
@@ -106,7 +115,7 @@ def main() -> None:
         errors.append("External script or stylesheet dependency found")
     for markup in dangerous_markup(html):
         errors.append(f"Dangerous markup found: {markup}")
-    for raw_url in re.findall(r"https?://[^\s\"'<>]+", unescape(html), re.I):
+    for raw_url in re.findall(r"(?:https?://|//)[^\s\"'<>]+", unescape(html), re.I):
         url = raw_url.rstrip(".,)")
         if not (allow_analytics and url in parser.analytics_urls and is_allowed_analytics_url(url)):
             errors.append("External URL found in weekly artifact")

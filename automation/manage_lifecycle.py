@@ -6,15 +6,15 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import tempfile
 from datetime import date
 from pathlib import Path
 from typing import Any
 
+from replacement_utils import normalize_replacement_url
+
 ROOT = Path(__file__).resolve().parents[1]
 VALID_STATUSES = {"backlog", "built", "retired", "revisit"}
-INTERNAL_PRODUCT_RE = re.compile(r"^products/[a-z0-9][a-z0-9-]*/(?:index\.html)?$|^products/weekly/\d{4}-w\d{2}/$", re.I)
 ALLOWED_TRANSITIONS = {
     "backlog": {"retired", "revisit"},
     "built": {"retired", "revisit"},
@@ -50,11 +50,7 @@ def find_idea(data: dict[str, Any], idea_id: str) -> dict[str, Any]:
 
 
 def validate_replacement(value: str | None) -> str | None:
-    if not value:
-        return None
-    if not INTERNAL_PRODUCT_RE.fullmatch(value):
-        raise ValueError("replacement URL must be an internal products/... path")
-    return value
+    return normalize_replacement_url(value)
 
 
 def transition(data: dict[str, Any], idea_id: str, new_status: str, reason: str, replacement_url: str | None = None) -> dict[str, Any]:

@@ -32,6 +32,11 @@ with tempfile.TemporaryDirectory() as tmp:
     assert fresh.returncode == 0, fresh.stderr
     assert "proceed" in output.read_text(encoding="utf-8")
 
+    for invalid_period in ("2026-w00", "2026-w54", "2026-w99"):
+        invalid = run("--period", invalid_period, "--products-root", str(root / "weekly"))
+        assert invalid.returncode != 0
+        assert "ISO week" in invalid.stderr
+
     existing = root / "weekly" / "2099-w02" / "index.html"
     existing.parent.mkdir(parents=True)
     existing.write_text("<!DOCTYPE html>", encoding="utf-8")

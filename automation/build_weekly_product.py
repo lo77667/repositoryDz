@@ -4,11 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import html as html_module
 import json
 import os
 import re
 from datetime import date
 from pathlib import Path
+
+from period_utils import require_period
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_ROOT = ROOT / "templates"
@@ -50,15 +53,17 @@ def load_idea(raw: str | None) -> dict[str, str]:
 
 def render(template: str, idea: dict[str, str], period: str) -> str:
     payload = json.dumps(idea, ensure_ascii=False, separators=(",", ":"))
+    payload = payload.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
     injection = f"  <script>\n    window.__WEEKLY_IDEA__ = {payload};\n  </script>\n"
     marker = "  <script>\n    (() => {"
     if marker not in template:
         raise RuntimeError("The selected template script marker was not found")
     html = template.replace(marker, injection + marker, 1)
-    html = html.replace("<title>شرارة منتج — مولّد أفكار رقمية</title>", f"<title>{idea['title']} — منتج أسبوعي</title>", 1)
-    html = html.replace("<title>محول رقمي — منتج أسبوعي</title>", f"<title>{idea['title']} — منتج أسبوعي</title>", 1)
-    html = html.replace("<title>لعبة بصرية — منتج أسبوعي</title>", f"<title>{idea['title']} — منتج أسبوعي</title>", 1)
-    html = html.replace("<title>أداة نصية — منتج أسبوعي</title>", f"<title>{idea['title']} — منتج أسبوعي</title>", 1)
+    escaped_title = html_module.escape(idea["title"])
+    html = html.replace("<title>شرارة منتج — مولّد أفكار رقمية</title>", f"<title>{escaped_title} — منتج أسبوعي</title>", 1)
+    html = html.replace("<title>محول رقمي — منتج أسبوعي</title>", f"<title>{escaped_title} — منتج أسبوعي</title>", 1)
+    html = html.replace("<title>لعبة بصرية — منتج أسبوعي</title>", f"<title>{escaped_title} — منتج أسبوعي</title>", 1)
+    html = html.replace("<title>أداة نصية — منتج أسبوعي</title>", f"<title>{escaped_title} — منتج أسبوعي</title>", 1)
     html = html.replace("نسخة يدوية تجريبية — المرحلة 1", f"نسخة أسبوعية {period} — المرحلة 3", 1)
     html = html.replace("نسخة ثابتة من مصنع المنتجات — <span id=\"period-label\">فترة أسبوعية</span>", f"نسخة أسبوعية من مصنع المنتجات — <span id=\"period-label\">{period}</span>", 1)
     return html
@@ -81,9 +86,10 @@ def main() -> None:
     parser.add_argument("--overwrite", action="store_true", help="Allow replacing a different existing artifact")
     args = parser.parse_args()
 
-    period = args.period or period_for(date.today())
-    if not re.fullmatch(r"\d{4}-w\d{2}", period):
-        raise SystemExit("Period must match YYYY-wNN, for example 2026-w34")
+    try:
+        period = require_period(args.period or period_for(date.today()))
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     idea = load_idea(args.idea_json)
     template_path = STRATEGY_TO_TEMPLATE[idea["strategy"]]
     if not template_path.exists():

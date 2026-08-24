@@ -5,11 +5,10 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
 from datetime import date
 from pathlib import Path
 
-PERIOD_RE = re.compile(r"^\d{4}-w\d{2}$")
+from period_utils import require_period
 
 
 def current_period(today: date) -> str:
@@ -35,13 +34,15 @@ def main() -> None:
         help="Root directory containing weekly product folders",
     )
     args = parser.parse_args()
-    period = args.period.strip() or current_period(date.today())
-    if not PERIOD_RE.fullmatch(period):
-        raise SystemExit("Period must match YYYY-wNN")
+    explicit_period = args.period.strip()
+    try:
+        period = require_period(explicit_period or current_period(date.today()))
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
     output_path = Path(args.products_root) / period / "index.html"
     if output_path.exists():
-        if args.period.strip():
+        if explicit_period:
             raise SystemExit(
                 f"Period {period} is already published at {output_path}; refusing manual reuse."
             )

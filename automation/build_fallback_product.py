@@ -8,6 +8,8 @@ import html
 import json
 from pathlib import Path
 
+from period_utils import require_period
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -16,9 +18,13 @@ def main() -> None:
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
     idea = json.loads(args.idea_json)
+    try:
+        period_value = require_period(args.period)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     title = html.escape(str(idea["title"]))
     pitch = html.escape(str(idea["pitch"]))
-    period = html.escape(args.period)
+    period = html.escape(period_value)
     document = f'''<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -55,6 +61,8 @@ def main() -> None:
 </html>
 '''
     output = Path(args.output)
+    if output.exists():
+        raise SystemExit(f"Refusing to overwrite an existing artifact: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(document, encoding="utf-8")
     print(json.dumps({"status": "fallback", "path": args.output, "period": args.period}, ensure_ascii=False))

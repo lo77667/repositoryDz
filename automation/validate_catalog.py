@@ -60,6 +60,10 @@ def validate(path: Path) -> list[str]:
     for link in parser.links:
         if urlparse(link).scheme or link.startswith("//") or not re.fullmatch(r"products(?:/[-a-z0-9]+){1,3}/", link):
             errors.append(f"Catalog contains a non-local product link: {link}")
+            continue
+        target = ROOT / link / "index.html"
+        if not target.is_file():
+            errors.append(f"Catalog link target does not exist: {link}")
     for raw_url in re.findall(r"https?://[^\s\"'<>]+", unescape(html), re.I):
         url = raw_url.rstrip(".,)")
         if url not in parser.analytics_urls or not is_allowed_analytics_url(url):

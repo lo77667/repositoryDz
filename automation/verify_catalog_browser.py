@@ -49,13 +49,35 @@ def main() -> None:
             page.wait_for_timeout(500)
             cards = page.locator("article.card")
             links = page.locator("a.open")
+            replacement_links = page.locator("a.replacement")
+            all_links = page.locator("a.open, a.replacement")
             result["cards"] = cards.count()
             result["links"] = links.count()
+            result["replacement_links"] = replacement_links.count()
             result["title"] = page.title()
             if cards.count() < 1 or links.count() != cards.count():
-                raise AssertionError("catalog cards and links are not aligned")
+                raise AssertionError("catalog cards and product links are not aligned")
             if not page.locator("h1").is_visible():
                 raise AssertionError("catalog heading is not visible")
+
+            hrefs = all_links.evaluate_all("elements => elements.map(element => element.getAttribute('href'))")
+            for href in hrefs:
+                if not isinstance(href, str) or not href:
+                    raise AssertionError("catalog contains an empty product link")
+                target = (path.parent / href / "index.html").resolve()
+                if not target.is_file():
+                    raise AssertionError(f"catalog link target does not exist: {href}")
+                probe = browser.new_page()
+                try:
+                    probe.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
+                    probe.on("pageerror", lambda exception: page_errors.append(str(exception)))
+                    probe.on("request", record_request)
+                    probe.goto(target.as_uri(), wait_until="load", timeout=15_000)
+                    probe.wait_for_timeout(250)
+                finally:
+                    probe.close()
+            result["opened_all_product_links"] = len(hrefs)
+
             links.first.click(timeout=5_000)
             page.wait_for_timeout(250)
             result["clicked_first_product"] = True

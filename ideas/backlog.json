@@ -326,6 +326,18 @@
       "category": "wellbeing",
       "shape": "planner",
       "built_period": "2026-w50"
+    },
+    {
+      "id": "legacy-weekly-2026-w35",
+      "slug": "weekly-2026-w35-legacy",
+      "title": "شرارة منتج — مولّد تجربة من خمس دقائق لـ فرق التسويق الصغيرة",
+      "pitch": "نسخة 2026-w35 من مولّد شرارة منتج.",
+      "strategy": "template:idea-mashup",
+      "status": "built",
+      "difficulty": 1,
+      "category": "general",
+      "shape": "",
+      "built_period": "2026-w35"
     }
   ]
 }

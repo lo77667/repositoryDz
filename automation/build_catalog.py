@@ -10,6 +10,9 @@ import re
 from pathlib import Path
 from typing import Any
 
+from period_utils import require_period
+from replacement_utils import normalize_replacement_url
+
 ROOT = Path(__file__).resolve().parents[1]
 PRODUCT_ROOT = ROOT / "products"
 WEEKLY_RE = re.compile(r"products/weekly/(\d{4}-w\d{2})/index\.html$")
@@ -67,8 +70,11 @@ def collect_products() -> list[dict[str, Any]]:
         if idea.get("pitch"):
             pitch = idea["pitch"]
         if relative.startswith("products/weekly/"):
-            url = f"products/weekly/{key}/"
-            period = key
+            try:
+                period = require_period(key)
+            except ValueError as exc:
+                raise ValueError(f"Invalid weekly product path {relative}: {exc}") from exc
+            url = f"products/weekly/{period}/"
         else:
             url = f"products/{path.parent.name}/"
             period = str(idea.get("built_period", "phase-1"))
@@ -86,7 +92,7 @@ def collect_products() -> list[dict[str, Any]]:
                 "source": relative,
                 "lifecycle_status": lifecycle_status,
                 "lifecycle_reason": str(idea.get("lifecycle_reason", "")),
-                "replacement_url": str(idea.get("replacement_url", "")),
+                "replacement_url": normalize_replacement_url(str(idea.get("replacement_url", ""))) or "",
             }
         )
     unique = {item["url"]: item for item in products}
@@ -105,8 +111,12 @@ def render_catalog(products: list[dict[str, Any]]) -> str:
             if reason:
                 status_markup += f'<small class="lifecycle-reason">{reason}</small>'
         replacement_url = str(item.get("replacement_url", ""))
+        try:
+            replacement_url = normalize_replacement_url(replacement_url) or ""
+        except ValueError:
+            replacement_url = ""
         replacement_markup = ""
-        if replacement_url and re.fullmatch(r"products/(?:weekly/\d{4}-w\d{2}|[a-z0-9][a-z0-9-]*)/?", replacement_url, re.I):
+        if replacement_url:
             replacement_markup = f'<a class="replacement" href="{html.escape(replacement_url, quote=True)}">فتح البديل</a>'
         cards.append(
             """<article class="card" data-lifecycle="{lifecycle}"><div class="meta"><span>{period}</span><span>{category}</span></div>

@@ -71,6 +71,8 @@ def validate(path: Path, allow_analytics: bool = False) -> list[str]:
     if path.stat().st_size > MAX_BYTES:
         errors.append(f"Generated artifact exceeds {MAX_BYTES} bytes")
     html = path.read_text(encoding="utf-8")
+    if not re.fullmatch(r"<!doctype html>[\s\S]*</html>\s*", html, re.I):
+        errors.append("Document must be one complete HTML document from doctype through closing html tag")
     parser = SafetyParser()
     try:
         parser.feed(html)
@@ -97,7 +99,7 @@ def validate(path: Path, allow_analytics: bool = False) -> list[str]:
         errors.append(f"Blocked capability found: {token}")
     for markup in dangerous_markup(html):
         errors.append(f"Dangerous markup found: {markup}")
-    for raw_url in re.findall(r"https?://[^\s\"'<>]+", unescape(html), re.I):
+    for raw_url in re.findall(r"(?:https?://|//)[^\s\"'<>]+", unescape(html), re.I):
         url = raw_url.rstrip(".,)")
         if not (allow_analytics and url in parser.analytics_urls and is_allowed_analytics_url(url)):
             errors.append("External URL found")

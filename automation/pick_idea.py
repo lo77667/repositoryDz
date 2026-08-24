@@ -7,18 +7,17 @@ import argparse
 import hashlib
 import json
 import os
-import re
 import tempfile
 from datetime import date
 from pathlib import Path
 from typing import Any
 
+from period_utils import parse_period, require_period
+
 ROOT = Path(__file__).resolve().parents[1]
 BACKLOG_PATH = ROOT / "ideas/backlog.json"
 CATALOG_PATH = ROOT / "catalog.json"
 RECENT_MEMORY_SIZE = 4
-PERIOD_RE = re.compile(r"^(\d{4})-w(\d{2})$")
-
 
 def current_period(today: date) -> str:
     year, week, _ = today.isocalendar()
@@ -50,8 +49,7 @@ def load_catalog(path: Path = CATALOG_PATH) -> list[dict[str, Any]]:
 
 
 def period_key(value: Any) -> tuple[int, int]:
-    match = PERIOD_RE.fullmatch(str(value or ""))
-    return (int(match.group(1)), int(match.group(2))) if match else (0, 0)
+    return parse_period(value) or (0, 0)
 
 
 def recent_memory(catalog: list[dict[str, Any]], size: int = RECENT_MEMORY_SIZE) -> dict[str, Any]:
@@ -131,9 +129,10 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="Select without marking the idea built")
     parser.add_argument("--catalog", default=str(CATALOG_PATH), help="Catalog JSON used as diversity memory")
     args = parser.parse_args()
-    period = args.period or current_period(date.today())
-    if not PERIOD_RE.fullmatch(period):
-        raise SystemExit("Period must match YYYY-wNN")
+    try:
+        period = require_period(args.period or current_period(date.today()))
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
     data = load_backlog()
     available = [
