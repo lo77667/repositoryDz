@@ -45,21 +45,49 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Pick one backlog idea
-        id: pick
+      - name: Guard weekly period before picking an idea
+        id: period_guard
         env:
-          WEEKLY_PERIOD: ${{ inputs.period }}
+          REQUESTED_PERIOD: ${{ inputs.period }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -n "${WEEKLY_PERIOD:-}" ]]; then
-            python3 automation/pick_idea.py --period "${WEEKLY_PERIOD}" --strategy-prefix template:
-          else
-            python3 automation/pick_idea.py --strategy-prefix template:
+          python3 automation/guard_weekly_period.py --period "${REQUESTED_PERIOD:-}"
+
+      - name: Send already-published notification
+        if: ${{ success() && steps.period_guard.outputs.decision == 'already_published' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          PRODUCT_PERIOD: ${{ steps.period_guard.outputs.period }}
+          PRODUCT_URL: ${{ steps.period_guard.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "::error::Telegram secrets are required for the already-published notification."
+            exit 1
           fi
+          message="الفترة ${PRODUCT_PERIOD} منشورة مسبقًا — لم يتم اختيار فكرة أو استبدال المنتج.\n${PRODUCT_URL}"
+          response="$(curl --fail-with-body --silent --show-error --retry 3 --connect-timeout 10 --max-time 30 \
+            --request POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text=${message}")"
+          grep -q '"ok":true' <<<"${response}"
+
+      - name: Pick one backlog idea
+        id: pick
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
+        env:
+          WEEKLY_PERIOD: ${{ steps.period_guard.outputs.period }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 automation/pick_idea.py --period "${WEEKLY_PERIOD}" --strategy-prefix template:
 
       - name: Build the selected deterministic artifact
         id: build
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         env:
           WEEKLY_PERIOD: ${{ steps.pick.outputs.period }}
           SELECTED_IDEA: ${{ steps.pick.outputs.idea_json }}
@@ -71,18 +99,22 @@ jobs:
             --idea-json "${SELECTED_IDEA}"
 
       - name: Validate the generated artifact before analytics
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         shell: bash
         run: python3 automation/validate_weekly_product.py "${{ steps.build.outputs.path }}"
 
       - name: Add the trusted page-view pixel
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         shell: bash
         run: python3 automation/instrument_analytics.py "${{ steps.build.outputs.path }}"
 
       - name: Validate the final weekly artifact
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         shell: bash
         run: python3 automation/validate_weekly_product.py "${{ steps.build.outputs.path }}" --allow-analytics
 
       - name: Build and validate the public storefront catalog
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -94,6 +126,7 @@ jobs:
           python3 automation/verify_catalog_browser.py index.html
 
       - name: Commit and push the new weekly artifact and backlog state
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -114,6 +147,7 @@ jobs:
           fi
 
       - name: Wait for the published Pages path
+        if: ${{ steps.period_guard.outputs.decision == 'proceed' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -135,7 +169,7 @@ jobs:
           done
 
       - name: Send successful weekly notification
-        if: ${{ success() }}
+        if: ${{ success() && steps.period_guard.outputs.decision == 'proceed' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
